@@ -8,6 +8,7 @@ import CraftTheSpire.util.InventoryManager;
 import CraftTheSpire.util.TextureLoader;
 import basemod.abstracts.CustomReward;
 import com.badlogic.gdx.graphics.Texture;
+import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.core.CardCrawlGame;
 import com.megacrit.cardcrawl.localization.UIStrings;
 import com.megacrit.cardcrawl.rewards.RewardItem;
@@ -26,6 +27,11 @@ public class PowerComponent extends AbstractComponent {
 
     public PowerComponent() {
         super(ID, UI_TEXT[0], RARITY, TYPE, ICON);
+    }
+
+    @Override
+    public boolean canDropOnDisassemble(AbstractCard card) {
+        return card.type == AbstractCard.CardType.POWER;
     }
 
     @Override

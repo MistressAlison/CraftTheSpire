@@ -32,6 +32,11 @@ public class PlatedComponent extends AbstractComponent {
     }
 
     @Override
+    public boolean canDropOnDisassemble(AbstractCard card) {
+        return card.baseBlock > 1 && !(card instanceof RitualDagger);
+    }
+
+    @Override
     public ArrayList<AbstractCard> filterCards(ArrayList<AbstractCard> input) {
         input.removeIf(c -> c.baseBlock < 1 || c instanceof RitualDagger);
         return input;

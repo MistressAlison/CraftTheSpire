@@ -61,6 +61,10 @@ public abstract class AbstractComponent {
         return true;
     }
 
+    public boolean canDropOnDisassemble(AbstractCard card) {
+        return false;
+    }
+
     public void playPickupSFX() {
         CardCrawlGame.sound.playA("KEY_OBTAIN", -0.2F);
     }

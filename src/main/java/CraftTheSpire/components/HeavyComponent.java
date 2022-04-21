@@ -32,6 +32,11 @@ public class HeavyComponent extends AbstractComponent {
     }
 
     @Override
+    public boolean canDropOnDisassemble(AbstractCard card) {
+        return card.cost >= 2;
+    }
+
+    @Override
     public ArrayList<AbstractCard> filterCards(ArrayList<AbstractCard> input) {
         input.removeIf(c -> c.cost < 2);
         return input;

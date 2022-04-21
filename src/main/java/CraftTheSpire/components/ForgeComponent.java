@@ -31,6 +31,11 @@ public class ForgeComponent extends AbstractComponent {
     }
 
     @Override
+    public boolean canDropOnDisassemble(AbstractCard card) {
+        return card.upgraded;
+    }
+
+    @Override
     public ArrayList<AbstractCard> filterCards(ArrayList<AbstractCard> input) {
         input.removeIf(c -> !c.canUpgrade());
         return input;

@@ -32,6 +32,11 @@ public class LightComponent extends AbstractComponent {
     }
 
     @Override
+    public boolean canDropOnDisassemble(AbstractCard card) {
+        return card.cost == 0 || card.cost == 1;
+    }
+
+    @Override
     public ArrayList<AbstractCard> filterCards(ArrayList<AbstractCard> input) {
         input.removeIf(c -> c.cost > 1 || c.cost < 0);
         return input;

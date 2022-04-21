@@ -40,38 +40,19 @@ public class MagicComponent extends AbstractComponent {
     }
 
     @Override
+    public boolean canDropOnDisassemble(AbstractCard card) {
+        return card.baseMagicNumber > 1;
+    }
+
+    @Override
     public ArrayList<AbstractCard> filterCards(ArrayList<AbstractCard> input) {
-        input.removeIf(c -> !usesMagic(c));
+        input.removeIf(c -> c.baseMagicNumber < 1);
         return input;
     }
 
     @Override
     public String modifyPreviewDescription(String desc) {
         return desc + UI_TEXT[2];
-    }
-
-    private static boolean usesMagicBool;
-    public static boolean usesMagic(AbstractCard card) {
-        usesMagicBool = false;
-        if (card.baseMagicNumber > 0 && StringUtils.containsIgnoreCase(card.rawDescription, "!M!")) {
-            try {
-                ClassPool pool = Loader.getClassPool();
-                CtMethod ctClass = pool.get(card.getClass().getName()).getDeclaredMethod("use");
-
-                ctClass.instrument(new ExprEditor() {
-                    @Override
-                    public void edit(FieldAccess f) {
-
-                        if (f.getFieldName().equals("magicNumber") && !f.isWriter()) {
-                            usesMagicBool = true;
-                        }
-
-                    }
-                });
-
-            } catch (Exception ignored) { }
-        }
-        return usesMagicBool;
     }
 
     @Override
