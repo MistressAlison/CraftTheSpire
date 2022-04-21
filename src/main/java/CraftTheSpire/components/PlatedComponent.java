@@ -33,7 +33,7 @@ public class PlatedComponent extends AbstractComponent {
 
     @Override
     public ArrayList<AbstractCard> filterCards(ArrayList<AbstractCard> input) {
-        input.removeIf(c -> c.baseBlock > 0 && !(c instanceof RitualDagger));
+        input.removeIf(c -> c.baseBlock < 1 || c instanceof RitualDagger);
         return input;
     }
 
