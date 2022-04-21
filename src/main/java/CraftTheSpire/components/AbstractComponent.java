@@ -7,6 +7,7 @@ import com.badlogic.gdx.graphics.Texture;
 import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.core.CardCrawlGame;
 import com.megacrit.cardcrawl.core.Settings;
+import com.megacrit.cardcrawl.monsters.AbstractMonster;
 
 import java.util.ArrayList;
 
@@ -63,6 +64,10 @@ public abstract class AbstractComponent {
 
     public boolean canDropOnDisassemble(AbstractCard card) {
         return false;
+    }
+
+    public boolean canDropOnKill(AbstractMonster m) {
+        return true;
     }
 
     public void playPickupSFX() {

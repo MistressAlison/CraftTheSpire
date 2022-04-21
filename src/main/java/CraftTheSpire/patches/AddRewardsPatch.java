@@ -1,6 +1,7 @@
 package CraftTheSpire.patches;
 
 import CraftTheSpire.CraftTheSpireMod;
+import CraftTheSpire.components.AbstractComponent;
 import CraftTheSpire.rewards.AbstractRewardLogic;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePatch2;
 import com.evacipated.cardcrawl.modthespire.lib.SpirePrefixPatch;
@@ -9,14 +10,16 @@ import com.megacrit.cardcrawl.monsters.AbstractMonster;
 import com.megacrit.cardcrawl.powers.MinionPower;
 import com.megacrit.cardcrawl.rewards.RewardItem;
 
+import java.util.ArrayList;
+import java.util.stream.Collectors;
+
 public class AddRewardsPatch {
-    public static final int DROP_PERCENT = 50;
     @SpirePatch2(clz = AbstractMonster.class, method = "die", paramtypez = {boolean.class})
     public static class OnKillLad {
         @SpirePrefixPatch
         public static void addThingy(AbstractMonster __instance) {
             if (!__instance.isDying && !__instance.hasPower(MinionPower.POWER_ID)) {
-                AbstractRewardLogic r = rollReward();
+                AbstractRewardLogic r = rollReward(__instance);
                 if (r != null) {
                     for (RewardItem reward : AbstractDungeon.getCurrRoom().rewards) {
                         if (reward instanceof AbstractRewardLogic && ((AbstractRewardLogic) reward).rewardID.equals(r.rewardID)) {
@@ -30,18 +33,20 @@ public class AddRewardsPatch {
         }
     }
 
-    public static AbstractRewardLogic rollReward() {
-        if (AbstractDungeon.treasureRng.random(99) < DROP_PERCENT) {
+    public static AbstractRewardLogic rollReward(AbstractMonster m) {
+        if (AbstractDungeon.treasureRng.random(99) < CraftTheSpireMod.dropProbability) {
             float roll = AbstractDungeon.treasureRng.random(9);
-            AbstractRewardLogic r = null;
+            ArrayList<AbstractComponent> validComponents = CraftTheSpireMod.componentMap.values().stream().filter(comp -> comp.canDropOnKill(m)).collect(Collectors.toCollection(ArrayList::new));
             if (roll == 0 && !CraftTheSpireMod.rareComponents.isEmpty()) {
-                r = CraftTheSpireMod.rareComponents.get(AbstractDungeon.treasureRng.random(CraftTheSpireMod.rareComponents.size()-1)).spawnReward(1);
+                validComponents.removeIf(c -> c.rarity != AbstractComponent.SpawnRarity.RARE);
             } else if (roll < 4 && !CraftTheSpireMod.uncommonComponents.isEmpty()) {
-                r = CraftTheSpireMod.uncommonComponents.get(AbstractDungeon.treasureRng.random(CraftTheSpireMod.uncommonComponents.size()-1)).spawnReward(1);
+                validComponents.removeIf(c -> c.rarity != AbstractComponent.SpawnRarity.UNCOMMON);
             } else if (!CraftTheSpireMod.commonComponents.isEmpty()) {
-                r = CraftTheSpireMod.commonComponents.get(AbstractDungeon.treasureRng.random(CraftTheSpireMod.commonComponents.size()-1)).spawnReward(1);
+                validComponents.removeIf(c -> c.rarity != AbstractComponent.SpawnRarity.COMMON);
             }
-            return r;
+            if (!validComponents.isEmpty()) {
+                return validComponents.get(AbstractDungeon.treasureRng.random(validComponents.size()-1)).spawnReward(1);
+            }
         }
         return null;
     }
