@@ -110,4 +110,13 @@ public class ComponentContainer {
             }
         }
     }
+
+    public String getPreviewDescription(String desc) {
+        for (ClickableUIObjects.UIComponentTickBox c : components) {
+            if (c.clicked) {
+                desc = c.component.modifyPreviewDescription(desc);
+            }
+        }
+        return desc;
+    }
 }

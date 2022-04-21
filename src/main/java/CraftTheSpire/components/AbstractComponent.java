@@ -55,8 +55,8 @@ public abstract class AbstractComponent {
                 return CraftingScreen.RARITY.components.stream().noneMatch(c -> c.clicked && !c.component.getClass().equals(this.getClass()));
             case TYPE_MOD:
                 return CraftingScreen.TYPE.components.stream().noneMatch(c -> c.clicked && !c.component.getClass().equals(this.getClass()));
-            case EXTRA:
-                return CraftingScreen.EXTRA.components.stream().noneMatch(c -> c.clicked && !c.component.getClass().equals(this.getClass()));
+            /*case EXTRA:
+                return CraftingScreen.EXTRA.components.stream().noneMatch(c -> c.clicked && !c.component.getClass().equals(this.getClass()));*/
         }
         return true;
     }
@@ -77,6 +77,10 @@ public abstract class AbstractComponent {
 
     public ArrayList<AbstractCard> filterCards(ArrayList<AbstractCard> input) {
         return input;
+    }
+
+    public String modifyPreviewDescription(String desc) {
+        return desc;
     }
 
     public void modifyCreatedCard(AbstractCard card) {}

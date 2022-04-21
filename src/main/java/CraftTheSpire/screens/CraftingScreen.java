@@ -2,6 +2,7 @@ package CraftTheSpire.screens;
 
 import CraftTheSpire.CraftTheSpireMod;
 import CraftTheSpire.components.AbstractComponent;
+import CraftTheSpire.patches.DescriptionOverridePatch;
 import CraftTheSpire.patches.ScreenPatches;
 import CraftTheSpire.patches.TypeOverridePatch;
 import CraftTheSpire.ui.ClickableUIObjects;
@@ -158,6 +159,12 @@ public class CraftingScreen implements ScrollBarListener {
     public void updatePreviewCard() {
         previewCard.update();
         TypeFilter type = TYPE.getSelectedType();
+        String current = previewCard.rawDescription;
+        previewCard.rawDescription = getPreviewDescription("");
+        if (!current.equals(previewCard.rawDescription)) {
+            previewCard.initializeDescription();
+        }
+        DescriptionOverridePatch.DescriptionOverrideField.descriptionOverride.set(previewCard, !previewCard.rawDescription.equals(""));
         if (type == TypeFilter.RANDOM) {
             if (previewCard.type != AbstractCard.CardType.SKILL) {
                 previewCard.type = AbstractCard.CardType.SKILL;
@@ -209,6 +216,10 @@ public class CraftingScreen implements ScrollBarListener {
         for (AbstractCard c : examplePreviews) {
             c.update();
         }
+    }
+
+    public String getPreviewDescription(String desc) {
+        return EXTRA.getPreviewDescription(TYPE.getPreviewDescription(RARITY.getPreviewDescription(desc)));
     }
 
     public void modifyCreatedCard(AbstractCard card) {
