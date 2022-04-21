@@ -10,7 +10,7 @@ import com.megacrit.cardcrawl.powers.MinionPower;
 import com.megacrit.cardcrawl.rewards.RewardItem;
 
 public class AddRewardsPatch {
-    public static final int DROP_PERCENT = 35;
+    public static final int DROP_PERCENT = 50;
     @SpirePatch2(clz = AbstractMonster.class, method = "die", paramtypez = {boolean.class})
     public static class OnKillLad {
         @SpirePrefixPatch
