@@ -189,26 +189,35 @@ public class CraftingScreen implements ScrollBarListener {
             generateNewExamples = false;
             examplePreviews.clear();
             ArrayList<AbstractCard> cards = getValidCards();
-            if (!cards.isEmpty()) {
-                for (int i = 0 ; i < 4 ; i++) {
-                    AbstractCard card = cards.get(previewRandom.random(cards.size() - 1)).makeStatEquivalentCopy();
-                    modifyCreatedCard(card);
-                    examplePreviews.add(card);
+            for (int i = 0 ; i < 4 ; i++) {
+                if (!cards.isEmpty()) {
+                    AbstractCard card = cards.get(previewRandom.random(cards.size() - 1));
+                    cards.remove(card);
+                    AbstractCard copy = card.makeStatEquivalentCopy();
+                    setupExampleCard(copy);
+                    modifyCreatedCard(copy);
+                    examplePreviews.add(copy);
                 }
-                scaleCard(examplePreviews.get(0), CARD_SCALE, CARD_SCALE_TARGET);
-                moveCard(examplePreviews.get(0), EXAMPLE_CX - CARD_DX, EXAMPLE_Y - EXAMPLE_Y_DY - CARD_DY);
-
-                scaleCard(examplePreviews.get(1), CARD_SCALE, CARD_SCALE_TARGET);
-                moveCard(examplePreviews.get(1), EXAMPLE_CX + CARD_DX, EXAMPLE_Y - EXAMPLE_Y_DY - CARD_DY);
-
-                scaleCard(examplePreviews.get(2), CARD_SCALE, CARD_SCALE_TARGET);
-                moveCard(examplePreviews.get(2), EXAMPLE_CX - CARD_DX, EXAMPLE_Y - EXAMPLE_Y_DY - 3*CARD_DY);
-
-                scaleCard(examplePreviews.get(3), CARD_SCALE, CARD_SCALE_TARGET);
-                moveCard(examplePreviews.get(3), EXAMPLE_CX + CARD_DX, EXAMPLE_Y - EXAMPLE_Y_DY - 3*CARD_DY);
-            } else {
+            }
+            if (examplePreviews.isEmpty()) {
                 this.confirmButton.isDisabled = true;
             }
+        }
+    }
+
+    public void setupExampleCard(AbstractCard card) {
+        if (examplePreviews.isEmpty()) {
+            scaleCard(card, CARD_SCALE, CARD_SCALE_TARGET);
+            moveCard(card, EXAMPLE_CX - CARD_DX, EXAMPLE_Y - EXAMPLE_Y_DY - CARD_DY);
+        } else if (examplePreviews.size() == 1) {
+            scaleCard(card, CARD_SCALE, CARD_SCALE_TARGET);
+            moveCard(card, EXAMPLE_CX + CARD_DX, EXAMPLE_Y - EXAMPLE_Y_DY - CARD_DY);
+        } else if (examplePreviews.size() == 2) {
+            scaleCard(card, CARD_SCALE, CARD_SCALE_TARGET);
+            moveCard(card, EXAMPLE_CX - CARD_DX, EXAMPLE_Y - EXAMPLE_Y_DY - 3*CARD_DY);
+        } else {
+            scaleCard(card, CARD_SCALE, CARD_SCALE_TARGET);
+            moveCard(card, EXAMPLE_CX + CARD_DX, EXAMPLE_Y - EXAMPLE_Y_DY - 3*CARD_DY);
         }
     }
 
