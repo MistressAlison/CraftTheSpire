@@ -245,7 +245,7 @@ public class CraftingScreen implements ScrollBarListener {
 
     public void generateCraftedCard() {
         ArrayList<AbstractCard> cards = getValidCards();
-        AbstractCard card = cards.get(AbstractDungeon.cardRandomRng.random(cards.size() - 1));
+        AbstractCard card = cards.get(AbstractDungeon.cardRandomRng.random(cards.size() - 1)).makeStatEquivalentCopy();
         modifyCreatedCard(card);
         createdCards.add(card);
         consumeComponents();
