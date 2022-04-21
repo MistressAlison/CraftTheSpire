@@ -18,10 +18,10 @@
     ]
   },
   "CraftTheSpire:CraftOption": {
-    "TEXT": ["Craft", "Create a new card using components", "Not enough crafting materials."]
+    "TEXT": ["Craft", "Create a new card using components.", "Not enough crafting materials.", "You have already crafted a card."]
   },
   "CraftTheSpire:CraftScreen": {
-    "TEXT": ["Confirm", "Cancel", "Confirm Your Selection", "Leave"]
+    "TEXT": ["Confirm", "Cancel", "Confirm Your Selection", "Leave", "Example Output"]
   },
   "CraftTheSpire:CraftScreenComponentContainers": {
     "TEXT": ["Rarity Materials", "Type Materials", "Extra Materials"]
@@ -29,7 +29,7 @@
   "CraftTheSpire:CampfireCraftEffect": {
     "TEXT": ["Mix components to create a new card."]
   },
-  "CraftTheSpire:ExampleMod": {
-    "TEXT": ["Prefix name", "Suffix name", "Description stuff"]
+  "CraftTheSpire:InventoryButton": {
+    "TEXT": ["Components", "Components are used for crafting at campfires.", " NL "]
   }
 }

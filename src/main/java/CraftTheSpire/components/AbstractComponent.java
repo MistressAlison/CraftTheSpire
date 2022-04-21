@@ -1,10 +1,14 @@
 package CraftTheSpire.components;
 
+import CraftTheSpire.rewards.AbstractRewardLogic;
 import CraftTheSpire.screens.CraftingScreen;
-import CraftTheSpire.ui.ClickableUIObjects;
-import CraftTheSpire.ui.ComponentContainer;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
+import com.megacrit.cardcrawl.cards.AbstractCard;
+import com.megacrit.cardcrawl.core.CardCrawlGame;
 import com.megacrit.cardcrawl.core.Settings;
+
+import java.util.ArrayList;
 
 public abstract class AbstractComponent {
     public enum SpawnRarity {
@@ -23,12 +27,14 @@ public abstract class AbstractComponent {
     public String ID;
     public SpawnRarity rarity;
     public ComponentType type;
+    public Texture icon;
 
-    public AbstractComponent(String ID, String name, SpawnRarity rarity, ComponentType type) {
+    public AbstractComponent(String ID, String name, SpawnRarity rarity, ComponentType type, Texture icon) {
         this.ID = ID;
         this.name = name;
         this.rarity = rarity;
         this.type = type;
+        this.icon = icon;
     }
 
     public Color getNameColor() {
@@ -55,5 +61,25 @@ public abstract class AbstractComponent {
         return true;
     }
 
-    public abstract void onClick();
+    public void playPickupSFX() {
+        CardCrawlGame.sound.playA("KEY_OBTAIN", -0.2F);
+    }
+
+    public void onSelectThisComponent() {}
+
+    public CraftingScreen.RarityFilter forceRarity() {
+        return CraftingScreen.RarityFilter.RANDOM;
+    }
+
+    public CraftingScreen.TypeFilter forceType() {
+        return CraftingScreen.TypeFilter.RANDOM;
+    }
+
+    public ArrayList<AbstractCard> filterCards(ArrayList<AbstractCard> input) {
+        return input;
+    }
+
+    public void modifyCreatedCard(AbstractCard card) {}
+
+    public abstract AbstractRewardLogic spawnReward(int amount);
 }

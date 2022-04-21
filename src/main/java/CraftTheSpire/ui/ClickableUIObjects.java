@@ -2,6 +2,7 @@ package CraftTheSpire.ui;
 
 import CraftTheSpire.components.AbstractComponent;
 import CraftTheSpire.screens.CraftingScreen;
+import CraftTheSpire.util.InventoryManager;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.megacrit.cardcrawl.core.CardCrawlGame;
@@ -103,17 +104,23 @@ public class ClickableUIObjects {
         public float x, y;
         private static final float PAD = 32F * Settings.scale;
         private static final float HB_HEIGHT = 25F * Settings.scale;
+        private int currentAmount;
 
         public UIComponentTickBox(AbstractComponent component) {
             this.component = component;
             this.notSelectedColor = component.getNameColor().cpy().mul(0.8F);
             this.cantSelectColor = notSelectedColor.cpy().mul(0.8F);
             this.hb = new Hitbox(getAssembledWidth(), HB_HEIGHT);
+            this.currentAmount = InventoryManager.items.getOrDefault(component.ID, 0);
             checkClickable();
         }
 
         private float getAssembledWidth() {
-            return PAD + FontHelper.getWidth(FontHelper.cardTitleFont, component.name, 1);
+            return PAD + FontHelper.getWidth(FontHelper.cardTitleFont, getAssembledName(), 1);
+        }
+
+        private String getAssembledName() {
+            return component.name + " x" + (clicked ? currentAmount-1 : currentAmount);
         }
 
         public void move(float x, float y) {
@@ -123,22 +130,23 @@ public class ClickableUIObjects {
         }
 
         public void checkClickable() {
-            clickable = component.canSelect();
+            clickable = currentAmount > 0 && component.canSelect();
         }
 
         @Override
         public void update() {
             hb.update();
             if (!clickable) {
-                clicked = false;
-                return;
-            }
-            if (hb.hovered && InputHelper.justClickedLeft) {
+                if (clicked) {
+                    clicked = false;
+                    CraftingScreen.updateOnClicked();
+                }
+            } else if (hb.hovered && InputHelper.justClickedLeft) {
                 CardCrawlGame.sound.play("UI_CLICK_1");
                 clicked = !clicked;
                 CraftingScreen.updateOnClicked();
                 if (clicked) {
-                   component.onClick();
+                   component.onSelectThisComponent();
                 }
             }
         }
@@ -146,7 +154,7 @@ public class ClickableUIObjects {
         @Override
         public void render(SpriteBatch sb) {
             FontHelper.cardTitleFont.getData().setScale(1F);
-            FontHelper.renderFontLeftDownAligned(sb, FontHelper.cardTitleFont, component.name, x + PAD, y, clickable ? (hb.hovered ? component.getNameColor() : notSelectedColor) : cantSelectColor);
+            FontHelper.renderFontLeftDownAligned(sb, FontHelper.cardTitleFont, getAssembledName(), x + PAD, y, clickable ? (hb.hovered ? component.getNameColor() : notSelectedColor) : cantSelectColor);
             if (clickable) {
                 sb.draw(ImageMaster.OPTION_TOGGLE, this.x - 0.0F, this.y - 8F * Settings.scale, 0.0F, 0.0F, 32.0F, 32.0F, Settings.scale, Settings.scale, 0.0F, 0, 0, 32, 32, false, false);
                 if (clicked) {

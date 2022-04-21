@@ -1,10 +1,15 @@
 package CraftTheSpire;
 
 import CraftTheSpire.components.AbstractComponent;
+import CraftTheSpire.rewards.AbstractRewardLogic;
+import CraftTheSpire.ui.InventoryButton;
+import CraftTheSpire.util.InventoryManager;
 import CraftTheSpire.util.TextureLoader;
 import basemod.*;
+import basemod.abstracts.CustomSavable;
 import basemod.interfaces.EditKeywordsSubscriber;
 import basemod.interfaces.EditStringsSubscriber;
+import basemod.interfaces.PostCreateStartingRelicsSubscriber;
 import basemod.interfaces.PostInitializeSubscriber;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
@@ -29,7 +34,8 @@ import java.util.*;
 public class CraftTheSpireMod implements
         EditStringsSubscriber,
         PostInitializeSubscriber,
-        EditKeywordsSubscriber {
+        EditKeywordsSubscriber,
+        PostCreateStartingRelicsSubscriber {
     // Make sure to implement the subscribers *you* are using (read basemod wiki). Editing cards? EditCardsSubscriber.
     // Making relics? EditRelicsSubscriber. etc., etc., for a full list and how to make your own, visit the basemod wiki.
     public static final Logger logger = LogManager.getLogger(CraftTheSpireMod.class.getName());
@@ -161,6 +167,8 @@ public class CraftTheSpireMod implements
                 rareComponents.add(c);
                 break;
         }
+        AbstractRewardLogic logic = c.spawnReward(0);
+        BaseMod.registerCustomReward(logic.type, logic, logic);
     }
 
     public static void setModID(String ID) {
@@ -329,13 +337,28 @@ public class CraftTheSpireMod implements
 
         logger.info("Done loading badge Image and mod options");
 
-        logger.info("Loading card mods...");
+        logger.info("Loading components...");
 
         new AutoAdd(modID)
                 .packageFilter("CraftTheSpire.components")
                 .any(AbstractComponent.class, (info, component) -> registerComponents(component));
 
-        logger.info("Done loading card mods");
+        logger.info("Done loading components");
+
+        BaseMod.addTopPanelItem(new InventoryButton());
+
+        BaseMod.addSaveField(InventoryManager.saveString, new CustomSavable<TreeMap<String, Integer>>() {
+            @Override
+            public TreeMap<String, Integer> onSave() {
+                return InventoryManager.items;
+            }
+
+            @Override
+            public void onLoad(TreeMap<String, Integer> stringIntegerTreeMap) {
+                InventoryManager.items.clear();
+                InventoryManager.items.putAll(stringIntegerTreeMap);
+            }
+        });
 
         /*logger.info("Setting up dev commands");
 
@@ -398,6 +421,10 @@ public class CraftTheSpireMod implements
         return getModID() + ":" + idText;
     }
 
+    public static String makeUIPath(String resourcePath) {
+        return getModID() + "Resources/images/ui/" + resourcePath;
+    }
+
     @Override
     public void receiveEditKeywords() {
         // Keywords on cards are supposed to be Capitalized, while in Keyword-String.json they're lowercase
@@ -418,5 +445,10 @@ public class CraftTheSpireMod implements
                 //  getModID().toLowerCase() makes your keyword mod specific (it won't show up in other cards that use that word)
             }
         }
+    }
+
+    @Override
+    public void receivePostCreateStartingRelics(AbstractPlayer.PlayerClass playerClass, ArrayList<String> arrayList) {
+        InventoryManager.items.clear();
     }
 }

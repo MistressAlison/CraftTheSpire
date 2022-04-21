@@ -3,6 +3,8 @@ package CraftTheSpire.ui;
 import CraftTheSpire.CraftTheSpireMod;
 import CraftTheSpire.patches.ScreenPatches;
 import CraftTheSpire.relics.OnCraftRelic;
+import CraftTheSpire.screens.CraftingScreen;
+import basemod.ReflectionHacks;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -17,8 +19,11 @@ import com.megacrit.cardcrawl.relics.AbstractRelic;
 import com.megacrit.cardcrawl.rooms.AbstractRoom;
 import com.megacrit.cardcrawl.rooms.CampfireUI;
 import com.megacrit.cardcrawl.rooms.RestRoom;
+import com.megacrit.cardcrawl.ui.campfire.AbstractCampfireOption;
 import com.megacrit.cardcrawl.vfx.AbstractGameEffect;
 import com.megacrit.cardcrawl.vfx.cardManip.ShowCardAndObtainEffect;
+
+import java.util.ArrayList;
 
 public class CampfireCraftEffect extends AbstractGameEffect {
     private static final UIStrings uiStrings = CardCrawlGame.languagePack.getUIString(CraftTheSpireMod.makeID("CampfireCraftEffect"));
@@ -42,8 +47,8 @@ public class CampfireCraftEffect extends AbstractGameEffect {
         }
 
 
-        if (!AbstractDungeon.isScreenUp && !ScreenPatches.craftingScreen.createdCards.isEmpty()) {
-            for (AbstractCard c : ScreenPatches.craftingScreen.createdCards) {
+        if (!AbstractDungeon.isScreenUp && !CraftingScreen.createdCards.isEmpty()) {
+            for (AbstractCard c : CraftingScreen.createdCards) {
                 //++CardCrawlGame.metricData.campfire_upgraded;// 55
                 //CardCrawlGame.metricData.addCampfireChoiceData("SMITH", c.getMetricID());// 56
                 AbstractDungeon.effectsQueue.add(new ShowCardAndObtainEffect(c, Settings.WIDTH/2F, Settings.HEIGHT/2F));// 59
@@ -54,8 +59,13 @@ public class CampfireCraftEffect extends AbstractGameEffect {
                 }
             }
 
-            AbstractDungeon.gridSelectScreen.selectedCards.clear();// 61
-            ((RestRoom)AbstractDungeon.getCurrRoom()).fadeIn();// 62
+            CraftingScreen.createdCards.clear();
+            ((RestRoom)AbstractDungeon.getCurrRoom()).fadeIn();
+            for (AbstractCampfireOption o : ReflectionHacks.<ArrayList<AbstractCampfireOption>>getPrivate(((RestRoom)AbstractDungeon.getCurrRoom()).campfireUI, CampfireUI.class, "buttons")) {
+                if (o instanceof CraftOption) {
+                    ((CraftOption) o).onCraftCard();
+                }
+            }
         }
 
         if (this.duration < 1.0F && !this.openedScreen) {
@@ -68,12 +78,12 @@ public class CampfireCraftEffect extends AbstractGameEffect {
             }*/
         }
 
-        if (this.duration < 0.0F) {// 84
-            this.isDone = true;// 85
-            if (CampfireUI.hidden) {// 86
-                AbstractRoom.waitTimer = 0.0F;// 87
-                AbstractDungeon.getCurrRoom().phase = AbstractRoom.RoomPhase.COMPLETE;// 88
-                ((RestRoom)AbstractDungeon.getCurrRoom()).cutFireSound();// 89
+        if (this.duration < 0.0F) {
+            this.isDone = true;
+            if (CampfireUI.hidden) {
+                AbstractRoom.waitTimer = 0.0F;
+                AbstractDungeon.getCurrRoom().phase = AbstractRoom.RoomPhase.COMPLETE;
+                ((RestRoom)AbstractDungeon.getCurrRoom()).cutFireSound();
             }
         }
     }

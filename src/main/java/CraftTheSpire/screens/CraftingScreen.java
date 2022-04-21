@@ -19,6 +19,7 @@ import com.megacrit.cardcrawl.helpers.ImageMaster;
 import com.megacrit.cardcrawl.helpers.MathHelper;
 import com.megacrit.cardcrawl.helpers.input.InputHelper;
 import com.megacrit.cardcrawl.localization.UIStrings;
+import com.megacrit.cardcrawl.random.Random;
 import com.megacrit.cardcrawl.rooms.RestRoom;
 import com.megacrit.cardcrawl.screens.mainMenu.ScrollBar;
 import com.megacrit.cardcrawl.screens.mainMenu.ScrollBarListener;
@@ -26,6 +27,7 @@ import com.megacrit.cardcrawl.ui.buttons.CancelButton;
 import com.megacrit.cardcrawl.ui.buttons.GridSelectConfirmButton;
 import javassist.CtBehavior;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class CraftingScreen implements ScrollBarListener {
@@ -34,16 +36,22 @@ public class CraftingScreen implements ScrollBarListener {
     public static final String[] TEXT = uiStrings.TEXT;
     public static final String[] CONTAINER_TEXT = uiStrings2.TEXT;
     private static final float SCROLL_BAR_THRESHOLD = 500.0F * Settings.scale;
-    private final float CONTAINER_START_X = Settings.WIDTH/12F;
-    private final float CONTAINER_START_Y = Settings.HEIGHT*5F/6F;
+    private static final float CONTAINER_START_X = Settings.WIDTH/12F;
+    private static final float CONTAINER_START_Y = Settings.HEIGHT*5F/6F;
+    private static final float EXAMPLE_CX = Settings.WIDTH*5/6F;
+    private static final float EXAMPLE_Y = CONTAINER_START_Y;
+    private static final float CARD_SCALE = 0.5F;
+    private static final float CARD_SCALE_TARGET = 0.7F;
+    private static final float CARD_DX = (AbstractCard.IMG_WIDTH * CARD_SCALE_TARGET)/2F + 10F * Settings.scale;
+    private static final float CARD_DY = (AbstractCard.IMG_HEIGHT * CARD_SCALE_TARGET)/2F + 10F * Settings.scale;
+    private static final float EXAMPLE_Y_DY = 40F * Settings.scale;
     private float grabStartY = 0.0F;
     private float currentDiffY = 0.0F;
     public static ArrayList<AbstractCard> createdCards = new ArrayList<>();
     public static ArrayList<ComponentContainer> containers = new ArrayList<>();
+    public static ArrayList<AbstractCard> examplePreviews = new ArrayList<>();
     public static ComponentContainer RARITY, TYPE, EXTRA;
     private AbstractCard previewCard = null;
-    public static AbstractCard.CardType previewType;
-    public static AbstractCard.CardRarity previewRarity;
     private float scrollLowerBound;
     private float scrollUpperBound;
     private boolean grabbedScreen;
@@ -52,18 +60,54 @@ public class CraftingScreen implements ScrollBarListener {
     private String tipMsg;
     private String lastTip;
     private ScrollBar scrollBar;
+    private static Random previewRandom = new Random();
+    private static boolean generateNewExamples;
+
+    public enum RarityFilter {
+        COMMON(AbstractCard.CardRarity.COMMON),
+        UNCOMMON(AbstractCard.CardRarity.UNCOMMON),
+        RARE(AbstractCard.CardRarity.RARE),
+        RANDOM(AbstractCard.CardRarity.COMMON); //Default to Common Skill, but obfuscated
+
+        AbstractCard.CardRarity r;
+
+        RarityFilter(AbstractCard.CardRarity r) {
+            this.r = r;
+        }
+
+        public AbstractCard.CardRarity getRarity() {
+            return r;
+        }
+    }
+
+    public enum TypeFilter {
+        ATTACK(AbstractCard.CardType.ATTACK),
+        SKILL(AbstractCard.CardType.SKILL),
+        POWER(AbstractCard.CardType.POWER),
+        RANDOM(AbstractCard.CardType.SKILL); //Default to Common Skill, but obfuscated
+
+        AbstractCard.CardType t;
+
+        TypeFilter(AbstractCard.CardType t) {
+            this.t = t;
+        }
+
+        public AbstractCard.CardType getType() {
+            return t;
+        }
+    }
 
     public CraftingScreen() {
-        this.scrollLowerBound = -Settings.DEFAULT_SCROLL_LIMIT;// 48
-        this.scrollUpperBound = Settings.DEFAULT_SCROLL_LIMIT;// 49
-        this.grabbedScreen = false;// 50
+        this.scrollLowerBound = -Settings.DEFAULT_SCROLL_LIMIT;
+        this.scrollUpperBound = Settings.DEFAULT_SCROLL_LIMIT;
+        this.grabbedScreen = false;
         this.confirmScreenUp = false;
-        this.confirmButton = new GridSelectConfirmButton(TEXT[0]);// 53
-        this.tipMsg = "";// 55
-        this.lastTip = "";// 56
-        this.scrollBar = new ScrollBar(this);// 78
-        this.scrollBar.move(0.0F, -30.0F * Settings.scale);// 79
-    }// 80
+        this.confirmButton = new GridSelectConfirmButton(TEXT[0]);
+        this.tipMsg = "";
+        this.lastTip = "";
+        this.scrollBar = new ScrollBar(this);
+        this.scrollBar.move(0.0F, -30.0F * Settings.scale);
+    }
 
     public void update() {
         boolean isDraggingScrollBar = false;
@@ -75,26 +119,21 @@ public class CraftingScreen implements ScrollBarListener {
             this.updateScrolling();
         }
 
-        this.confirmButton.isDisabled = !canCreateCard();
+        updateButtons();
+        updatePreviewCard();
+        updateExampleCards();
+        this.confirmButton.isDisabled = examplePreviews.isEmpty();
         this.confirmButton.update();
-        if (!this.confirmScreenUp) {
-            updateButtons();
-            updatePreviewCard();
-            if (!this.confirmButton.isDisabled && this.confirmButton.hb.clicked) {
-                this.confirmScreenUp = true;
-                AbstractDungeon.overlayMenu.cancelButton.show(TEXT[1]);
-                this.confirmButton.show();
-                this.confirmButton.isDisabled = false;
-                this.lastTip = this.tipMsg;
-                this.tipMsg = TEXT[2];
-            }
-        } else {
-            if (this.confirmButton.hb.clicked) {
-                this.confirmButton.hb.clicked = false;
-                AbstractDungeon.overlayMenu.cancelButton.hide();
-                this.confirmScreenUp = false;
-                this.createdCards.add(this.previewCard);
-                AbstractDungeon.closeCurrentScreen();
+        if (!this.confirmButton.isDisabled && this.confirmButton.hb.clicked) {
+            this.confirmButton.hb.clicked = false;
+            AbstractDungeon.overlayMenu.cancelButton.hide();
+            generateCraftedCard();
+            ReflectionHacks.RStaticMethod reset = ReflectionHacks.privateStaticMethod(AbstractDungeon.class, "genericScreenOverlayReset");
+            reset.invoke();
+            AbstractDungeon.closeCurrentScreen();
+            if (AbstractDungeon.getCurrRoom() instanceof RestRoom) {
+                RestRoom r = (RestRoom)AbstractDungeon.getCurrRoom();
+                r.campfireUI.reopen();
             }
         }
     }
@@ -102,6 +141,11 @@ public class CraftingScreen implements ScrollBarListener {
     public static void updateOnClicked() {
         for (ComponentContainer c : containers) {
             c.updateOnClicked();
+        }
+        if (hasMinimumCraftingRequirements()) {
+            generateNewExamples = true;
+        } else {
+            examplePreviews.clear();
         }
     }
 
@@ -113,53 +157,142 @@ public class CraftingScreen implements ScrollBarListener {
 
     public void updatePreviewCard() {
         previewCard.update();
-        if (TYPE.components.stream().noneMatch(c -> c.clicked)) {
+        TypeFilter type = TYPE.getSelectedType();
+        if (type == TypeFilter.RANDOM) {
             if (previewCard.type != AbstractCard.CardType.SKILL) {
                 previewCard.type = AbstractCard.CardType.SKILL;
                 previewCard.setLocked();
             }
             TypeOverridePatch.TypeOverrideField.typeOverride.set(previewCard, "? ? ?");
-        } else if (previewType != null) {
-            if (previewCard.type != previewType) {
-                previewCard.type = previewType;
+        } else {
+            if (previewCard.type != type.getType()) {
+                previewCard.type = type.getType();
                 previewCard.setLocked();
             }
             TypeOverridePatch.TypeOverrideField.typeOverride.set(previewCard, null);
         }
 
-        if (RARITY.components.stream().noneMatch(c -> c.clicked)) {
+        RarityFilter rarity = RARITY.getSelectedRarity();
+        if (rarity == RarityFilter.RANDOM) {
             previewCard.rarity = AbstractCard.CardRarity.COMMON;
-        } else if (previewRarity != null) {
-            previewCard.rarity = previewRarity;
+        } else {
+            previewCard.rarity = rarity.getRarity();
+        }
+        if (generateNewExamples) {
+            generateNewExamples = false;
+            examplePreviews.clear();
+            ArrayList<AbstractCard> cards = getValidCards();
+            if (!cards.isEmpty()) {
+                for (int i = 0 ; i < 4 ; i++) {
+                    AbstractCard card = cards.get(previewRandom.random(cards.size() - 1)).makeStatEquivalentCopy();
+                    modifyCreatedCard(card);
+                    examplePreviews.add(card);
+                }
+                scaleCard(examplePreviews.get(0), CARD_SCALE, CARD_SCALE_TARGET);
+                moveCard(examplePreviews.get(0), EXAMPLE_CX - CARD_DX, EXAMPLE_Y - EXAMPLE_Y_DY - CARD_DY);
+
+                scaleCard(examplePreviews.get(1), CARD_SCALE, CARD_SCALE_TARGET);
+                moveCard(examplePreviews.get(1), EXAMPLE_CX + CARD_DX, EXAMPLE_Y - EXAMPLE_Y_DY - CARD_DY);
+
+                scaleCard(examplePreviews.get(2), CARD_SCALE, CARD_SCALE_TARGET);
+                moveCard(examplePreviews.get(2), EXAMPLE_CX - CARD_DX, EXAMPLE_Y - EXAMPLE_Y_DY - 3*CARD_DY);
+
+                scaleCard(examplePreviews.get(3), CARD_SCALE, CARD_SCALE_TARGET);
+                moveCard(examplePreviews.get(3), EXAMPLE_CX + CARD_DX, EXAMPLE_Y - EXAMPLE_Y_DY - 3*CARD_DY);
+            } else {
+                this.confirmButton.isDisabled = true;
+            }
         }
     }
 
-    public boolean canCreateCard() {
-        return true;
+    public void updateExampleCards() {
+        for (AbstractCard c : examplePreviews) {
+            c.update();
+        }
+    }
+
+    public void modifyCreatedCard(AbstractCard card) {
+        RARITY.modifyCreatedCard(card);
+        TYPE.modifyCreatedCard(card);
+        EXTRA.modifyCreatedCard(card);
+    }
+
+    public void consumeComponents() {
+        RARITY.consumeSelectedComponents();
+        TYPE.consumeSelectedComponents();
+        EXTRA.consumeSelectedComponents();
+    }
+
+    public void generateCraftedCard() {
+        ArrayList<AbstractCard> cards = getValidCards();
+        AbstractCard card = cards.get(AbstractDungeon.cardRandomRng.random(cards.size() - 1));
+        modifyCreatedCard(card);
+        createdCards.add(card);
+        consumeComponents();
+    }
+
+    public static ArrayList<AbstractCard> getValidCards() {
+        ArrayList<AbstractCard> validCards = new ArrayList<>();
+        TypeFilter type = TYPE.getSelectedType();
+        RarityFilter rarity = RARITY.getSelectedRarity();
+        switch (rarity) {
+            case COMMON:
+                validCards.addAll(AbstractDungeon.srcCommonCardPool.group);
+                break;
+            case UNCOMMON:
+                validCards.addAll(AbstractDungeon.srcUncommonCardPool.group);
+                break;
+            case RARE:
+                validCards.addAll(AbstractDungeon.srcRareCardPool.group);
+                break;
+            case RANDOM:
+                validCards.addAll(AbstractDungeon.srcCommonCardPool.group);
+                validCards.addAll(AbstractDungeon.srcUncommonCardPool.group);
+                validCards.addAll(AbstractDungeon.srcRareCardPool.group);
+                break;
+        }
+        if (type != TypeFilter.RANDOM) {
+            validCards.removeIf(c -> c.type != type.getType());
+        }
+        validCards = EXTRA.filterCardPool(TYPE.filterCardPool(RARITY.filterCardPool(validCards)));
+        return validCards;
+    }
+
+    public static boolean hasMinimumCraftingRequirements() {
+        return RARITY.hasOneComponentSelected() && TYPE.hasOneComponentSelected();
     }
 
     public void open(String msg) {
         this.tipMsg = msg;
         this.callOnOpen();
         this.calculateScrollBounds();
-        this.previewCard = AbstractDungeon.commonCardPool.getRandomCard(false);
+        this.previewCard = AbstractDungeon.commonCardPool.getRandomCard(false).makeStatEquivalentCopy();
         prepPreviewCard();
         prepContainers();
         this.confirmButton.hideInstantly();
         this.confirmButton.show();
         this.confirmButton.updateText(TEXT[0]);
+        examplePreviews.clear();
     }
 
     public void prepPreviewCard() {
         previewCard.setLocked();
         previewCard.name = "? ? ?";
         previewCard.cost = -2;
-        previewCard.drawScale = 1F;
-        previewCard.targetDrawScale = 1.7F;
-        previewCard.current_x = Settings.WIDTH/2F;
-        previewCard.current_y = Settings.HEIGHT/2F;
-        previewCard.target_x = previewCard.current_x;
-        previewCard.target_y = previewCard.current_y;
+        scaleCard(previewCard, 1F, 1.7F);
+        moveCard(previewCard, Settings.WIDTH/2F, Settings.HEIGHT/2F);
+    }
+
+    public static void moveCard(AbstractCard card, float x, float y) {
+        card.current_x = x;
+        card.current_y = y;
+        card.target_x = x;
+        card.target_y = y;
+    }
+
+    public static void scaleCard(AbstractCard card, float current, float target) {
+        card.drawScale = current;
+        card.targetDrawScale = target;
     }
 
     public void prepContainers() {
@@ -197,7 +330,7 @@ public class CraftingScreen implements ScrollBarListener {
     private void callOnOpen() {
         this.confirmScreenUp = false;
         AbstractDungeon.overlayMenu.proceedButton.hide();
-        this.createdCards.clear();
+        createdCards.clear();
         AbstractDungeon.topPanel.unhoverHitboxes();
         this.currentDiffY = 0.0F;
         this.grabStartY = 0.0F;
@@ -262,6 +395,7 @@ public class CraftingScreen implements ScrollBarListener {
             this.scrollBar.render(sb);// 748
         }
         renderButtons(sb);
+        renderExampleCards(sb);
         this.previewCard.render(sb);
         if (this.confirmScreenUp) {// 808
             sb.setColor(new Color(0.0F, 0.0F, 0.0F, 0.8F));// 809
@@ -285,6 +419,13 @@ public class CraftingScreen implements ScrollBarListener {
         }
     }
 
+    public void renderExampleCards(SpriteBatch sb) {
+        FontHelper.renderFontCentered(sb, FontHelper.charTitleFont, TEXT[4], EXAMPLE_CX, EXAMPLE_Y, Settings.CREAM_COLOR);
+        for (AbstractCard c : examplePreviews) {
+            c.render(sb);
+        }
+    }
+
     public void scrolledUsingBar(float newPercent) {
         this.currentDiffY = MathHelper.valueFromPercentBetween(this.scrollLowerBound, this.scrollUpperBound, newPercent);// 924
         this.updateBarPosition();// 925
@@ -297,6 +438,15 @@ public class CraftingScreen implements ScrollBarListener {
 
     private boolean shouldShowScrollBar() {
         return !this.confirmScreenUp && this.scrollUpperBound > SCROLL_BAR_THRESHOLD;// 934
+    }
+
+    public void reopen() {
+        AbstractDungeon.overlayMenu.showBlackScreen(0.75F);
+        AbstractDungeon.isScreenUp = true;
+        AbstractDungeon.screen = ScreenPatches.Enums.CRAFT_SCREEN;
+        AbstractDungeon.topPanel.unhoverHitboxes();
+        AbstractDungeon.overlayMenu.cancelButton.show(TEXT[1]);
+        this.scrollBar.reset();
     }
 
     @SpirePatch2(clz = CancelButton.class, method = "update")

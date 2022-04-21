@@ -1,5 +1,6 @@
 package CraftTheSpire.patches;
 
+import basemod.abstracts.CustomCard;
 import basemod.patches.com.megacrit.cardcrawl.cards.AbstractCard.RenderCardDescriptors;
 import com.badlogic.gdx.graphics.g2d.GlyphLayout;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
@@ -9,6 +10,7 @@ import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.helpers.FontHelper;
 import javassist.CtBehavior;
 
+import javax.sound.sampled.Line;
 import java.util.List;
 
 public class TypeOverridePatch {
@@ -70,6 +72,23 @@ public class TypeOverridePatch {
             public int[] Locate(CtBehavior ctBehavior) throws Exception {
                 Matcher matcher = new Matcher.MethodCallMatcher(List.class, "add");
                 return LineFinder.findInOrder(ctBehavior, matcher);
+            }
+        }
+    }
+
+    @SpirePatch2(clz = AbstractCard.class, method = "renderType")
+    public static class WorkOnBaseGameCardsPlz {
+        @SpireInsertPatch(locator = Locator.class, localvars = {"text"})
+        public static void plz(AbstractCard __instance, @ByRef String[] text) {
+            if (!(__instance instanceof CustomCard) && TypeOverrideField.typeOverride.get(__instance) != null) {
+                text[0] = TypeOverrideField.typeOverride.get(__instance);
+            }
+        }
+        public static class Locator extends SpireInsertLocator {
+            @Override
+            public int[] Locate(CtBehavior ctBehavior) throws Exception {
+                Matcher m = new Matcher.MethodCallMatcher(FontHelper.class, "renderRotatedText");
+                return LineFinder.findInOrder(ctBehavior, m);
             }
         }
     }

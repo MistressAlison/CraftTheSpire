@@ -1,6 +1,10 @@
 package CraftTheSpire.ui;
 
+import CraftTheSpire.components.AbstractComponent;
+import CraftTheSpire.screens.CraftingScreen;
+import CraftTheSpire.util.InventoryManager;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.helpers.FontHelper;
 
@@ -27,6 +31,20 @@ public class ComponentContainer {
         components.add(componentTickBox);
     }
 
+    public boolean hasOneComponentSelected() {
+        boolean ret = false;
+        for (ClickableUIObjects.UIComponentTickBox t : components) {
+            if (t.clicked) {
+                if (!ret) {
+                    ret = true;
+                } else {
+                    return false;
+                }
+            }
+        }
+        return ret;
+    }
+
     public float getHeightOffset() {
         return 2*CONTAINER_OFFSET + Y_OFFSET * components.size();
     }
@@ -47,6 +65,49 @@ public class ComponentContainer {
         FontHelper.renderFontLeftDownAligned(sb, FontHelper.charTitleFont, label, x, y, Settings.CREAM_COLOR);
         for (ClickableUIObjects.UIComponentTickBox c : components) {
             c.render(sb);
+        }
+    }
+
+    public CraftingScreen.RarityFilter getSelectedRarity() {
+        for (ClickableUIObjects.UIComponentTickBox c : components) {
+            if (c.clicked && c.component.type == AbstractComponent.ComponentType.RARITY_MOD) {
+                return c.component.forceRarity();
+            }
+        }
+        return CraftingScreen.RarityFilter.RANDOM;
+    }
+
+    public CraftingScreen.TypeFilter getSelectedType() {
+        for (ClickableUIObjects.UIComponentTickBox c : components) {
+            if (c.clicked && c.component.type == AbstractComponent.ComponentType.TYPE_MOD) {
+                return c.component.forceType();
+            }
+        }
+        return CraftingScreen.TypeFilter.RANDOM;
+    }
+
+    public ArrayList<AbstractCard> filterCardPool(ArrayList<AbstractCard> cardPool) {
+        for (ClickableUIObjects.UIComponentTickBox c : components) {
+            if (c.clicked) {
+                cardPool = c.component.filterCards(cardPool);
+            }
+        }
+        return cardPool;
+    }
+
+    public void modifyCreatedCard(AbstractCard card) {
+        for (ClickableUIObjects.UIComponentTickBox c : components) {
+            if (c.clicked) {
+                c.component.modifyCreatedCard(card);
+            }
+        }
+    }
+
+    public void consumeSelectedComponents() {
+        for (ClickableUIObjects.UIComponentTickBox c : components) {
+            if (c.clicked) {
+                InventoryManager.consumeComponent(c.component);
+            }
         }
     }
 }

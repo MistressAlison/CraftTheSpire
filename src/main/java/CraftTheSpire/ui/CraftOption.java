@@ -1,7 +1,7 @@
 package CraftTheSpire.ui;
 
 import CraftTheSpire.CraftTheSpireMod;
-import CraftTheSpire.util.CraftingHelper;
+import CraftTheSpire.util.InventoryManager;
 import com.megacrit.cardcrawl.core.CardCrawlGame;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import com.megacrit.cardcrawl.helpers.ImageMaster;
@@ -18,7 +18,7 @@ public class CraftOption extends AbstractCampfireOption {
         this.description = TEXT[1];
         //this.img = ImageMaster.CAMPFIRE_RECALL_BUTTON;
         this.img = ImageMaster.loadImage("images/ui/campfire/meditate.png");
-        updateUsability(CraftingHelper.canActuallyCraft());
+        updateUsability(InventoryManager.canCraft());
     }
 
     public void updateUsability(boolean canUse) {
@@ -26,7 +26,14 @@ public class CraftOption extends AbstractCampfireOption {
         this.description = canUse ? TEXT[1] : TEXT[2];// 20
     }
 
+    public void onCraftCard() {
+        this.usable = false;
+        this.description = TEXT[3];
+    }
+
     public void useOption() {
-        AbstractDungeon.effectList.add(new CampfireCraftEffect());
+        if (usable) {
+            AbstractDungeon.effectList.add(new CampfireCraftEffect());
+        }
     }
 }

@@ -1,41 +1,59 @@
 package CraftTheSpire.components;
 
 import CraftTheSpire.CraftTheSpireMod;
-import CraftTheSpire.patches.ScreenPatches;
+import CraftTheSpire.patches.RewardTypeEnumPatches;
+import CraftTheSpire.rewards.AbstractRewardLogic;
 import CraftTheSpire.screens.CraftingScreen;
-import CraftTheSpire.ui.ClickableUIObjects;
-import CraftTheSpire.ui.ComponentContainer;
-import com.megacrit.cardcrawl.cards.AbstractCard;
+import CraftTheSpire.util.InventoryManager;
+import CraftTheSpire.util.TextureLoader;
+import basemod.abstracts.CustomReward;
+import com.badlogic.gdx.graphics.Texture;
 import com.megacrit.cardcrawl.core.CardCrawlGame;
 import com.megacrit.cardcrawl.localization.UIStrings;
+import com.megacrit.cardcrawl.rewards.RewardItem;
+import com.megacrit.cardcrawl.rewards.RewardSave;
 
 public class CommonComponent extends AbstractComponent {
+    public static final Texture ICON = TextureLoader.getTexture(CraftTheSpireMod.makeUIPath("CommonComponent.png"));
     public static final String ID = CraftTheSpireMod.makeID("CommonComponent");
     private static final UIStrings uiStrings = CardCrawlGame.languagePack.getUIString(ID);
-    public static final String[] TEXT = uiStrings.TEXT;
+    public static final String[] UI_TEXT = uiStrings.TEXT;
+
+    public static final SpawnRarity RARITY = SpawnRarity.COMMON;
+    public static final ComponentType TYPE = ComponentType.RARITY_MOD;
+    public static final RewardItem.RewardType REWARD = RewardTypeEnumPatches.CTS_COMMON_REWARD;
+
 
     public CommonComponent() {
-        super(ID, TEXT[0], SpawnRarity.COMMON, ComponentType.RARITY_MOD);
+        super(ID, UI_TEXT[0], RARITY, TYPE, ICON);
     }
 
     @Override
-    public boolean canSelect() {
-        for (ComponentContainer con : CraftingScreen.containers) {
-            for (ClickableUIObjects.UIComponentTickBox t : con.components) {
-                if (t.clicked) {
-                    if (t.component.getClass().equals(this.getClass())) {
-                        return true;
-                    } else if (t.component.type == this.type) {
-                        return false;
-                    }
-                }
-            }
+    public CraftingScreen.RarityFilter forceRarity() {
+        return CraftingScreen.RarityFilter.COMMON;
+    }
+
+    @Override
+    public AbstractRewardLogic spawnReward(int amount) {
+        return new RewardLogic(amount);
+    }
+
+    public static class RewardLogic extends AbstractRewardLogic {
+
+        public RewardLogic(int amount) {
+            super(ICON, ID, UI_TEXT[0], REWARD);
+            this.amount = amount;
         }
-        return true;
-    }
 
-    @Override
-    public void onClick() {
-        CraftingScreen.previewRarity = AbstractCard.CardRarity.COMMON;
+        @Override
+        public CustomReward onLoad(RewardSave rewardSave) {
+            return new RewardLogic(rewardSave.amount);
+        }
+
+        @Override
+        public boolean claimReward() {
+            InventoryManager.addComponent(ID, amount);
+            return true;
+        }
     }
 }
