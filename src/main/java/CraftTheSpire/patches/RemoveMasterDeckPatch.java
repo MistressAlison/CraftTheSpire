@@ -17,9 +17,11 @@ public class RemoveMasterDeckPatch {
     public static class FreeComponentsTime {
         @SpireInsertPatch(locator = Locator.class)
         public static void plz(AbstractCard c) {
-            ArrayList<AbstractComponent> validComponents = CraftTheSpireMod.componentMap.values().stream().filter(comp -> comp.canDropOnDisassemble(c)).collect(Collectors.toCollection(ArrayList::new));
-            if (!validComponents.isEmpty()) {
-                InventoryManager.addComponent(validComponents.get(AbstractDungeon.treasureRng.random(validComponents.size()-1)), 1);
+            if (CraftTheSpireMod.dropOnMasterDeckRemoval) {
+                ArrayList<AbstractComponent> validComponents = CraftTheSpireMod.componentMap.values().stream().filter(comp -> comp.canDropOnDisassemble(c)).collect(Collectors.toCollection(ArrayList::new));
+                if (!validComponents.isEmpty()) {
+                    InventoryManager.addComponent(validComponents.get(AbstractDungeon.treasureRng.random(validComponents.size()-1)), 1);
+                }
             }
         }
     }

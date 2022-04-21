@@ -14,7 +14,6 @@ import basemod.interfaces.PostInitializeSubscriber;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.evacipated.cardcrawl.mod.stslib.Keyword;
-import com.evacipated.cardcrawl.modthespire.Loader;
 import com.evacipated.cardcrawl.modthespire.lib.SpireConfig;
 import com.evacipated.cardcrawl.modthespire.lib.SpireInitializer;
 import com.google.gson.Gson;
@@ -41,17 +40,15 @@ public class CraftTheSpireMod implements
     public static final Logger logger = LogManager.getLogger(CraftTheSpireMod.class.getName());
     private static String modID;
 
-    public static boolean isMintyLoaded;
-
     // Mod-settings settings. This is if you want an on/off savable button
-    public static SpireConfig cardAugmentsConfig;
+    public static SpireConfig CTSConfig;
     public static String FILE_NAME = "CraftTheSpireConfig";
 
     public static final String ENABLE_MODS_SETTING = "enableMods";
     public static boolean enableMods = true; // The boolean we'll be setting on/off (true/false)
 
-    public static final String MOD_PROBABILITY = "modChance";
-    public static int modProbabilityPercent = 50;
+    public static final String DROP_PROBABILITY = "dropChance";
+    public static int dropProbability = 50;
 
     public static final String COMMON_WEIGHT = "commonWeight";
     public static int commonWeight = 5;
@@ -62,20 +59,8 @@ public class CraftTheSpireMod implements
     public static final String RARE_WEIGHT = "rareWeight";
     public static int rareWeight = 1;
 
-    public static final String MODIFY_STARTERS = "modifyStarters";
-    public static boolean modifyStarters = false;
-
-    public static final String MODIFY_INSTANT_OBTAIN = "modifyInstantObtain";
-    public static boolean modifyInstantObtain = false;
-
-    public static final String MODIFY_SHOP = "modifyShop";
-    public static boolean modifyShop = false;
-
-    public static final String ALLOW_ORBS = "allowOrbs";
-    public static boolean allowOrbs = false;
-
-    public static final String RARITY_BIAS = "rarityBias";
-    public static int rarityBias = 0;
+    public static final String DROP_WHEN_REMOVED = "dropWhenRemoved";
+    public static boolean dropOnMasterDeckRemoval = true;
 
     //Cardmod Lists
     public static final ArrayList<AbstractComponent> commonComponents = new ArrayList<>();
@@ -117,29 +102,21 @@ public class CraftTheSpireMod implements
         logger.info("Adding mod settings");
         // This loads the mod settings.
         // The actual mod Button is added below in receivePostInitialize()
-        Properties cardAugmentsDefaultSettings = new Properties();
-        cardAugmentsDefaultSettings.setProperty(ENABLE_MODS_SETTING, Boolean.toString(enableMods));
-        cardAugmentsDefaultSettings.setProperty(MOD_PROBABILITY, String.valueOf(modProbabilityPercent));
-        cardAugmentsDefaultSettings.setProperty(COMMON_WEIGHT, String.valueOf(commonWeight));
-        cardAugmentsDefaultSettings.setProperty(UNCOMMON_WEIGHT, String.valueOf(uncommonWeight));
-        cardAugmentsDefaultSettings.setProperty(RARE_WEIGHT, String.valueOf(rareWeight));
-        cardAugmentsDefaultSettings.setProperty(MODIFY_STARTERS, Boolean.toString(modifyStarters));
-        cardAugmentsDefaultSettings.setProperty(ALLOW_ORBS, Boolean.toString(allowOrbs));
-        cardAugmentsDefaultSettings.setProperty(RARITY_BIAS, String.valueOf(rarityBias));
-        cardAugmentsDefaultSettings.setProperty(MODIFY_INSTANT_OBTAIN, Boolean.toString(modifyInstantObtain));
-        cardAugmentsDefaultSettings.setProperty(MODIFY_SHOP, Boolean.toString(modifyShop));
+        Properties CTSDefaultSettings = new Properties();
+        CTSDefaultSettings.setProperty(ENABLE_MODS_SETTING, Boolean.toString(enableMods));
+        CTSDefaultSettings.setProperty(DROP_PROBABILITY, String.valueOf(dropProbability));
+        CTSDefaultSettings.setProperty(COMMON_WEIGHT, String.valueOf(commonWeight));
+        CTSDefaultSettings.setProperty(UNCOMMON_WEIGHT, String.valueOf(uncommonWeight));
+        CTSDefaultSettings.setProperty(RARE_WEIGHT, String.valueOf(rareWeight));
+        CTSDefaultSettings.setProperty(DROP_WHEN_REMOVED, Boolean.toString(dropOnMasterDeckRemoval));
         try {
-            cardAugmentsConfig = new SpireConfig(modID, FILE_NAME, cardAugmentsDefaultSettings);
-            enableMods = cardAugmentsConfig.getBool(ENABLE_MODS_SETTING);
-            modProbabilityPercent = cardAugmentsConfig.getInt(MOD_PROBABILITY);
-            commonWeight = cardAugmentsConfig.getInt(COMMON_WEIGHT);
-            uncommonWeight = cardAugmentsConfig.getInt(UNCOMMON_WEIGHT);
-            rareWeight = cardAugmentsConfig.getInt(RARE_WEIGHT);
-            modifyStarters = cardAugmentsConfig.getBool(MODIFY_STARTERS);
-            allowOrbs = cardAugmentsConfig.getBool(ALLOW_ORBS);
-            rarityBias = cardAugmentsConfig.getInt(RARITY_BIAS);
-            modifyInstantObtain = cardAugmentsConfig.getBool(MODIFY_STARTERS);
-            modifyShop = cardAugmentsConfig.getBool(MODIFY_SHOP);
+            CTSConfig = new SpireConfig(modID, FILE_NAME, CTSDefaultSettings);
+            enableMods = CTSConfig.getBool(ENABLE_MODS_SETTING);
+            dropProbability = CTSConfig.getInt(DROP_PROBABILITY);
+            commonWeight = CTSConfig.getInt(COMMON_WEIGHT);
+            uncommonWeight = CTSConfig.getInt(UNCOMMON_WEIGHT);
+            rareWeight = CTSConfig.getInt(RARE_WEIGHT);
+            dropOnMasterDeckRemoval = CTSConfig.getBool(DROP_WHEN_REMOVED);
         } catch (IOException e) {
             logger.error("Card Augments SpireConfig initialization failed:");
             e.printStackTrace();
@@ -193,9 +170,6 @@ public class CraftTheSpireMod implements
     public void receivePostInitialize() {
         logger.info("Loading badge image and mod options");
 
-        //Minty be messing with my stuff
-        isMintyLoaded = Loader.isModLoaded("mintyspire");
-
         //Grab the strings
         uiStrings = CardCrawlGame.languagePack.getUIString(makeID("ModConfigs"));
         EXTRA_TEXT = uiStrings.EXTRA_TEXT;
@@ -209,41 +183,55 @@ public class CraftTheSpireMod implements
 
         //Get the longest slider text for positioning
         ArrayList<String> labelStrings = new ArrayList<>(Arrays.asList(TEXT));
-        float sliderOffset = getSliderPosition(labelStrings.subList(1,5));
+        float sliderOffset = getSliderPosition(labelStrings.subList(2,3));
         labelStrings.clear();
         float currentYposition = 740f;
         float spacingY = 55f;
 
-        //Used to set the unused self damage setting.
+        /* //Used to set the enable the mod
         ModLabeledToggleButton enableModsButton = new ModLabeledToggleButton(TEXT[0],400.0f - 40f, currentYposition - 10f, Settings.CREAM_COLOR, FontHelper.charDescFont,
-                cardAugmentsConfig.getBool(ENABLE_MODS_SETTING), settingsPanel, (label) -> {}, (button) -> {
-            cardAugmentsConfig.setBool(ENABLE_MODS_SETTING, button.enabled);
+                CTSConfig.getBool(ENABLE_MODS_SETTING), settingsPanel, (label) -> {}, (button) -> {
+            CTSConfig.setBool(ENABLE_MODS_SETTING, button.enabled);
             enableMods = button.enabled;
-            try {cardAugmentsConfig.save();} catch (IOException e) {e.printStackTrace();}
+            try {
+                CTSConfig.save();} catch (IOException e) {e.printStackTrace();}
+        });
+        currentYposition -= spacingY;
+        */
+
+        //Used to allow component drops on master deck removal
+        ModLabeledToggleButton dropOnMasterDeckRemovalButton = new ModLabeledToggleButton(TEXT[1],400.0f - 40f, currentYposition - 10f, Settings.CREAM_COLOR, FontHelper.charDescFont,
+                CTSConfig.getBool(DROP_WHEN_REMOVED), settingsPanel, (label) -> {}, (button) -> {
+            CTSConfig.setBool(DROP_WHEN_REMOVED, button.enabled);
+            dropOnMasterDeckRemoval = button.enabled;
+            try {
+                CTSConfig.save();} catch (IOException e) {e.printStackTrace();}
         });
         currentYposition -= spacingY;
 
         //Used for probability of a mod being applied
-        ModLabel probabilityLabel = new ModLabel(TEXT[1], 400f, currentYposition, Settings.CREAM_COLOR, FontHelper.charDescFont, settingsPanel, modLabel -> {});
+        ModLabel probabilityLabel = new ModLabel(TEXT[2], 400f, currentYposition, Settings.CREAM_COLOR, FontHelper.charDescFont, settingsPanel, modLabel -> {});
         ModMinMaxSlider probabilitySlider = new ModMinMaxSlider("",
                 400f + sliderOffset,
                 currentYposition + 7f,
-                0, 100, cardAugmentsConfig.getInt(MOD_PROBABILITY), "%.0f", settingsPanel, slider -> {
-            cardAugmentsConfig.setInt(MOD_PROBABILITY, Math.round(slider.getValue()));
-            modProbabilityPercent = Math.round(slider.getValue());
-            try {cardAugmentsConfig.save();} catch (IOException e) {e.printStackTrace();}
+                0, 100, CTSConfig.getInt(DROP_PROBABILITY), "%.0f", settingsPanel, slider -> {
+            CTSConfig.setInt(DROP_PROBABILITY, Math.round(slider.getValue()));
+            dropProbability = Math.round(slider.getValue());
+            try {
+                CTSConfig.save();} catch (IOException e) {e.printStackTrace();}
         });
         currentYposition -= spacingY;
 
-        //Used for common mod weight
+        /*//Used for common mod weight
         ModLabel commonLabel = new ModLabel(TEXT[2], 400f, currentYposition, Settings.CREAM_COLOR, FontHelper.charDescFont, settingsPanel, modLabel -> {});
         ModMinMaxSlider commonSlider = new ModMinMaxSlider("",
                 400f + sliderOffset,
                 currentYposition + 7f,
-                1, 10, cardAugmentsConfig.getInt(COMMON_WEIGHT), "%.0f", settingsPanel, slider -> {
-            cardAugmentsConfig.setInt(COMMON_WEIGHT, Math.round(slider.getValue()));
+                1, 10, CTSConfig.getInt(COMMON_WEIGHT), "%.0f", settingsPanel, slider -> {
+            CTSConfig.setInt(COMMON_WEIGHT, Math.round(slider.getValue()));
             commonWeight = Math.round(slider.getValue());
-            try {cardAugmentsConfig.save();} catch (IOException e) {e.printStackTrace();}
+            try {
+                CTSConfig.save();} catch (IOException e) {e.printStackTrace();}
         });
         currentYposition -= spacingY;
 
@@ -252,10 +240,11 @@ public class CraftTheSpireMod implements
         ModMinMaxSlider uncommonSlider = new ModMinMaxSlider("",
                 400f + sliderOffset,
                 currentYposition + 7f,
-                1, 10, cardAugmentsConfig.getInt(UNCOMMON_WEIGHT), "%.0f", settingsPanel, slider -> {
-            cardAugmentsConfig.setInt(UNCOMMON_WEIGHT, Math.round(slider.getValue()));
+                1, 10, CTSConfig.getInt(UNCOMMON_WEIGHT), "%.0f", settingsPanel, slider -> {
+            CTSConfig.setInt(UNCOMMON_WEIGHT, Math.round(slider.getValue()));
             uncommonWeight = Math.round(slider.getValue());
-            try {cardAugmentsConfig.save();} catch (IOException e) {e.printStackTrace();}
+            try {
+                CTSConfig.save();} catch (IOException e) {e.printStackTrace();}
         });
         currentYposition -= spacingY;
 
@@ -264,76 +253,25 @@ public class CraftTheSpireMod implements
         ModMinMaxSlider rareSlider = new ModMinMaxSlider("",
                 400f + sliderOffset,
                 currentYposition + 7f,
-                1, 10, cardAugmentsConfig.getInt(RARE_WEIGHT), "%.0f", settingsPanel, slider -> {
-            cardAugmentsConfig.setInt(RARE_WEIGHT, Math.round(slider.getValue()));
+                1, 10, CTSConfig.getInt(RARE_WEIGHT), "%.0f", settingsPanel, slider -> {
+            CTSConfig.setInt(RARE_WEIGHT, Math.round(slider.getValue()));
             rareWeight = Math.round(slider.getValue());
-            try {cardAugmentsConfig.save();} catch (IOException e) {e.printStackTrace();}
+            try {
+                CTSConfig.save();} catch (IOException e) {e.printStackTrace();}
         });
-        currentYposition -= spacingY;
+        currentYposition -= spacingY;*/
 
-        //Used for bias weight
-        ModLabel biasLabel = new ModLabel(TEXT[7], 400f, currentYposition, Settings.CREAM_COLOR, FontHelper.charDescFont, settingsPanel, modLabel -> {});
-        ModMinMaxSlider biasSlider = new ModMinMaxSlider("",
-                400f + sliderOffset,
-                currentYposition + 7f,
-                0, 5, cardAugmentsConfig.getInt(RARITY_BIAS), "%.0f", settingsPanel, slider -> {
-            cardAugmentsConfig.setInt(RARITY_BIAS, Math.round(slider.getValue()));
-            rarityBias = Math.round(slider.getValue());
-            try {cardAugmentsConfig.save();} catch (IOException e) {e.printStackTrace();}
-        });
-        currentYposition -= spacingY;
-
-        //Used to modify starter cards
-        ModLabeledToggleButton enableStarterModificationButton = new ModLabeledToggleButton(TEXT[5],400.0f - 40f, currentYposition - 10f, Settings.CREAM_COLOR, FontHelper.charDescFont,
-                cardAugmentsConfig.getBool(MODIFY_STARTERS), settingsPanel, (label) -> {}, (button) -> {
-            cardAugmentsConfig.setBool(MODIFY_STARTERS, button.enabled);
-            modifyStarters = button.enabled;
-            try {cardAugmentsConfig.save();} catch (IOException e) {e.printStackTrace();}
-        });
-        currentYposition -= spacingY;
-
-        //Used to modify starter cards
-        ModLabeledToggleButton enableInstantObtainModificationButton = new ModLabeledToggleButton(TEXT[8],400.0f - 40f, currentYposition - 10f, Settings.CREAM_COLOR, FontHelper.charDescFont,
-                cardAugmentsConfig.getBool(MODIFY_INSTANT_OBTAIN), settingsPanel, (label) -> {}, (button) -> {
-            cardAugmentsConfig.setBool(MODIFY_INSTANT_OBTAIN, button.enabled);
-            modifyInstantObtain = button.enabled;
-            try {cardAugmentsConfig.save();} catch (IOException e) {e.printStackTrace();}
-        });
-        currentYposition -= spacingY;
-
-        //Used to modify starter cards
-        ModLabeledToggleButton enableShopButton = new ModLabeledToggleButton(TEXT[9],400.0f - 40f, currentYposition - 10f, Settings.CREAM_COLOR, FontHelper.charDescFont,
-                cardAugmentsConfig.getBool(MODIFY_SHOP), settingsPanel, (label) -> {}, (button) -> {
-            cardAugmentsConfig.setBool(MODIFY_SHOP, button.enabled);
-            modifyShop = button.enabled;
-            try {cardAugmentsConfig.save();} catch (IOException e) {e.printStackTrace();}
-        });
-        currentYposition -= spacingY;
-
-        //Used to allow orbs without prismatic shard
-        ModLabeledToggleButton enableAllowOrbsButton = new ModLabeledToggleButton(TEXT[6],400.0f - 40f, currentYposition - 10f, Settings.CREAM_COLOR, FontHelper.charDescFont,
-                cardAugmentsConfig.getBool(ALLOW_ORBS), settingsPanel, (label) -> {}, (button) -> {
-            cardAugmentsConfig.setBool(ALLOW_ORBS, button.enabled);
-            allowOrbs = button.enabled;
-            try {cardAugmentsConfig.save();} catch (IOException e) {e.printStackTrace();}
-        });
-        currentYposition -= spacingY;
-
-        settingsPanel.addUIElement(enableModsButton);
+        settingsPanel.addUIElement(dropOnMasterDeckRemovalButton);
+        //settingsPanel.addUIElement(enableModsButton);
         settingsPanel.addUIElement(probabilityLabel);
         settingsPanel.addUIElement(probabilitySlider);
-        settingsPanel.addUIElement(commonLabel);
-        settingsPanel.addUIElement(commonSlider);
-        settingsPanel.addUIElement(uncommonLabel);
-        settingsPanel.addUIElement(uncommonSlider);
-        settingsPanel.addUIElement(rareLabel);
-        settingsPanel.addUIElement(rareSlider);
-        settingsPanel.addUIElement(biasLabel);
-        settingsPanel.addUIElement(biasSlider);
-        settingsPanel.addUIElement(enableStarterModificationButton);
-        settingsPanel.addUIElement(enableInstantObtainModificationButton);
-        settingsPanel.addUIElement(enableShopButton);
-        settingsPanel.addUIElement(enableAllowOrbsButton);
+        //settingsPanel.addUIElement(commonLabel);
+        //settingsPanel.addUIElement(commonSlider);
+        //settingsPanel.addUIElement(uncommonLabel);
+        //settingsPanel.addUIElement(uncommonSlider);
+        //settingsPanel.addUIElement(rareLabel);
+        //settingsPanel.addUIElement(rareSlider);
+
 
         logger.info("Done loading badge Image and mod options");
 
