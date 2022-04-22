@@ -33,7 +33,7 @@
     "TEXT": ["Heavy Parts", "Not so convenient to carry around.", "High cost...? NL "]
   },
   "CraftTheSpire:MagicComponent": {
-    "TEXT": ["Magic Crystal", "Ooh shiny!", "Has a bonus effect...? NL "]
+    "TEXT": ["Magic Crystal", "Ooh shiny!", "Applies a debuff...? NL "]
   },
   "CraftTheSpire:PlatedComponent": {
     "TEXT": ["Spare Plating", "Looks protective.", "Gives Block...? NL "]
