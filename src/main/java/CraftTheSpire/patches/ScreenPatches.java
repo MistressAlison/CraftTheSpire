@@ -1,7 +1,6 @@
 package CraftTheSpire.patches;
 
 import CraftTheSpire.screens.CraftingScreen;
-import basemod.ReflectionHacks;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.evacipated.cardcrawl.modthespire.lib.*;
 import com.megacrit.cardcrawl.core.CardCrawlGame;
@@ -10,7 +9,10 @@ import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import com.megacrit.cardcrawl.helpers.input.InputHelper;
 import com.megacrit.cardcrawl.screens.DungeonMapScreen;
 import com.megacrit.cardcrawl.ui.panels.TopPanel;
+import javassist.CannotCompileException;
 import javassist.CtBehavior;
+import javassist.expr.ExprEditor;
+import javassist.expr.FieldAccess;
 
 public class ScreenPatches {
     public static class Enums {
@@ -127,7 +129,7 @@ public class ScreenPatches {
         }
     }
 
-    @SpirePatch2(clz = TopPanel.class, method = "updateMapButtonLogic")
+    /*@SpirePatch2(clz = TopPanel.class, method = "updateMapButtonLogic")
     public static class EnableMapButton {
         @SpireInsertPatch(locator= UpdateLocator.class)
         public static void plz(TopPanel __instance) {
@@ -143,9 +145,9 @@ public class ScreenPatches {
                 return LineFinder.findInOrder(ctMethodToPatch, finalMatcher);
             }
         }
-    }
+    }*/
 
-    @SpirePatch2(clz = TopPanel.class, method = "updateDeckViewButtonLogic")
+    /*@SpirePatch2(clz = TopPanel.class, method = "updateDeckViewButtonLogic")
     public static class EnableDeckButton {
         @SpireInsertPatch(locator= ReEnableLocator.class)
         public static void plz(TopPanel __instance) {
@@ -161,5 +163,47 @@ public class ScreenPatches {
                 return LineFinder.findInOrder(ctMethodToPatch, finalMatcher);
             }
         }
+    }*/
+
+    @SpirePatch2(clz = TopPanel.class, method = "updateMapButtonLogic")
+    public static class MapButtonFix {
+        static int hits = 0;
+        @SpireInstrumentPatch
+        public static ExprEditor patch() {
+            return new ExprEditor() {
+                @Override
+                public void edit(FieldAccess f) throws CannotCompileException {
+                    if (f.getFieldName().equals("screen") && f.getClassName().equals(AbstractDungeon.class.getName())) {
+                        hits++;
+                        if (hits == 2) {
+                            f.replace("$_ = CraftTheSpire.patches.ScreenPatches.checkForCraftingScreen($proceed($$));");
+                        }
+                    }
+                }
+            };
+        }
+    }
+
+    @SpirePatch2(clz = TopPanel.class, method = "updateDeckViewButtonLogic")
+    public static class DeckButtonFix {
+        static int hits = 0;
+        @SpireInstrumentPatch
+        public static ExprEditor patch() {
+            return new ExprEditor() {
+                @Override
+                public void edit(FieldAccess f) throws CannotCompileException {
+                    if (f.getFieldName().equals("screen") && f.getClassName().equals(AbstractDungeon.class.getName())) {
+                        hits++;
+                        if (hits == 2) {
+                            f.replace("$_ = CraftTheSpire.patches.ScreenPatches.checkForCraftingScreen($proceed($$));");
+                        }
+                    }
+                }
+            };
+        }
+    }
+
+    public static AbstractDungeon.CurrentScreen checkForCraftingScreen(AbstractDungeon.CurrentScreen screen) {
+        return screen == Enums.CRAFT_SCREEN ? AbstractDungeon.CurrentScreen.NONE : screen;
     }
 }
