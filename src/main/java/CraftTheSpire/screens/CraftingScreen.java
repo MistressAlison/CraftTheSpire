@@ -3,6 +3,7 @@ package CraftTheSpire.screens;
 import CraftTheSpire.CraftTheSpireMod;
 import CraftTheSpire.components.AbstractComponent;
 import CraftTheSpire.patches.DescriptionOverridePatch;
+import CraftTheSpire.patches.NoCardDescriptorsPlz;
 import CraftTheSpire.patches.ScreenPatches;
 import CraftTheSpire.patches.TypeOverridePatch;
 import CraftTheSpire.ui.ClickableUIObjects;
@@ -298,6 +299,7 @@ public class CraftingScreen implements ScrollBarListener {
     public void prepPreviewCard() {
         previewCard.setLocked();
         previewCard.name = "? ? ?";
+        NoCardDescriptorsPlz.NoDescriptorsField.cease.set(previewCard, true);
         previewCard.cost = -2;
         scaleCard(previewCard, 1F, 1.7F);
         moveCard(previewCard, Settings.WIDTH/2F, Settings.HEIGHT/2F);
