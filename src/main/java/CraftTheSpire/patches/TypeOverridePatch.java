@@ -10,29 +10,19 @@ import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.helpers.FontHelper;
 import javassist.CtBehavior;
 
-import javax.sound.sampled.Line;
 import java.util.List;
 
 public class TypeOverridePatch {
 
-    @SpirePatch(
-            clz= AbstractCard.class,
-            method=SpirePatch.CLASS
-    )
-    public static class TypeOverrideField
-    {
+    @SpirePatch(clz= AbstractCard.class, method=SpirePatch.CLASS)
+    public static class TypeOverrideField {
         public static SpireField<String> typeOverride = new SpireField<>(() -> null);
     }
 
-    @SpirePatch(
-            clz = RenderCardDescriptors.Text.class,
-            method = "Insert"
-    )
+    @SpirePatch(clz = RenderCardDescriptors.Text.class, method = "Insert")
     public static class OverrideTypeRenderPatch {
 
-        @SpireInsertPatch(
-                locator = Locator.class
-        )
+        @SpireInsertPatch(locator = Locator.class)
         public static void OverrideType(AbstractCard ___card, SpriteBatch sb, String[] text) {
             if (TypeOverrideField.typeOverride.get(___card) != null) {
                 text[0] = TypeOverrideField.typeOverride.get(___card);
@@ -47,16 +37,10 @@ public class TypeOverridePatch {
         }
     }
 
-    @SpirePatch(
-            clz = RenderCardDescriptors.Frame.class,
-            method = "Insert"
-    )
+    @SpirePatch(clz = RenderCardDescriptors.Frame.class, method = "Insert")
     public static class OverrideTypeSizePatch {
 
-        @SpireInsertPatch(
-                locator = Locator.class,
-                localvars = {"typeText", "descriptors"}
-        )
+        @SpireInsertPatch(locator = Locator.class, localvars = {"typeText", "descriptors"})
         public static void OverrideType(AbstractCard ___card, SpriteBatch sb, float x, float y, float[] tOffset, float[] tWidth, @ByRef String[] typeText, @ByRef List<String>[] descriptors) {
             if (TypeOverrideField.typeOverride.get(___card) != null) {
                 typeText[0] = TypeOverrideField.typeOverride.get(___card);
