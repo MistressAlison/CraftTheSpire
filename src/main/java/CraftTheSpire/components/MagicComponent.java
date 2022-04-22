@@ -14,12 +14,13 @@ import com.megacrit.cardcrawl.cards.colorless.RitualDagger;
 import com.megacrit.cardcrawl.cards.purple.Halt;
 import com.megacrit.cardcrawl.core.CardCrawlGame;
 import com.megacrit.cardcrawl.localization.UIStrings;
+import com.megacrit.cardcrawl.powers.AbstractPower;
 import com.megacrit.cardcrawl.rewards.RewardItem;
 import com.megacrit.cardcrawl.rewards.RewardSave;
-import javassist.ClassPool;
-import javassist.CtMethod;
+import javassist.*;
 import javassist.expr.ExprEditor;
 import javassist.expr.FieldAccess;
+import javassist.expr.NewExpr;
 import org.apache.commons.lang3.StringUtils;
 
 import java.util.ArrayList;
@@ -30,7 +31,7 @@ public class MagicComponent extends AbstractComponent {
     private static final UIStrings uiStrings = CardCrawlGame.languagePack.getUIString(ID);
     public static final String[] UI_TEXT = uiStrings.TEXT;
 
-    public static final SpawnRarity RARITY = SpawnRarity.UNCOMMON;
+    public static final SpawnRarity RARITY = SpawnRarity.COMMON;
     public static final ComponentType TYPE = ComponentType.EXTRA;
     public static final RewardItem.RewardType REWARD = RewardTypeEnumPatches.CTS_MAGIC_REWARD;
 
@@ -41,12 +42,12 @@ public class MagicComponent extends AbstractComponent {
 
     @Override
     public boolean canDropOnDisassemble(AbstractCard card) {
-        return card.baseMagicNumber > 1;
+        return appliesDebuff(card);
     }
 
     @Override
     public ArrayList<AbstractCard> filterCards(ArrayList<AbstractCard> input) {
-        input.removeIf(c -> c.baseMagicNumber < 1);
+        input.removeIf(c -> !appliesDebuff(c));
         return input;
     }
 
@@ -77,5 +78,73 @@ public class MagicComponent extends AbstractComponent {
             InventoryManager.addComponent(ID, amount);
             return true;
         }
+    }
+
+    public static boolean appliesDebuff(AbstractCard card) {
+        //Set up some flags
+        final boolean[] foundDebuff = {false};
+        final boolean[] foundBuff = {false};
+        final boolean[] isDebuff = {false};
+        try {
+            //Grab the use method
+            ClassPool pool = Loader.getClassPool();
+            CtMethod useMethod = pool.get(card.getClass().getName()).getDeclaredMethod("use");
+
+            useMethod.instrument(new ExprEditor() {
+                @Override
+                public void edit(NewExpr n) {
+                    try {
+                        //Check if the new object extends AbstractPower
+                        CtConstructor constructor = n.getConstructor();
+                        CtClass originalClass = constructor.getDeclaringClass();
+
+                        if (originalClass != null) {
+                            CtClass currentClass = originalClass;
+                            while (currentClass != null && !currentClass.getName().equals(AbstractPower.class.getName())) {
+                                currentClass = currentClass.getSuperclass();
+                            }
+                            //We found AbstractPower, good to go
+                            if (currentClass != null && currentClass.getName().equals(AbstractPower.class.getName())) {
+                                //Define a checker for finding the power type
+                                ExprEditor debuffChecker = new ExprEditor() {
+                                    @Override
+                                    public void edit(FieldAccess f) {
+                                        if (f.getClassName().equals(AbstractPower.PowerType.class.getName())) {
+                                            if (f.getFieldName().equals("DEBUFF")) {
+                                                foundDebuff[0] = true;
+                                            }
+                                            if (f.getClassName().equals("BUFF")) {
+                                                foundBuff[0] = true;
+                                            }
+                                        }
+                                    }
+                                };
+
+                                //Check both the constructor and the updateDescription to catch things like Strength
+                                constructor.instrument(debuffChecker);
+                                CtMethod descriptionMethod = currentClass.getDeclaredMethod("updateDescription");
+                                descriptionMethod.instrument(debuffChecker);
+
+                                //If we actually found a debuff
+                                if (foundDebuff[0]) {
+                                    //Check if it also isn't a buff sometimes
+                                    if (!foundBuff[0]) {
+                                        isDebuff[0] = true;
+                                    } else {
+                                        //Guess based on the card target
+                                        if (card.target == AbstractCard.CardTarget.ENEMY || card.target == AbstractCard.CardTarget.ALL_ENEMY) {
+                                            isDebuff[0] = true;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } catch (Exception ignored) {}
+                }
+            });
+        } catch (Exception ignored) {
+            return false;
+        }
+        return isDebuff[0];
     }
 }
