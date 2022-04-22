@@ -23,7 +23,7 @@ public class AddRewardsPatch {
                 if (r != null) {
                     for (RewardItem reward : AbstractDungeon.getCurrRoom().rewards) {
                         if (reward instanceof AbstractRewardLogic && ((AbstractRewardLogic) reward).rewardID.equals(r.rewardID)) {
-                            ((AbstractRewardLogic) reward).amount += r.amount;
+                            ((AbstractRewardLogic) reward).stack(r.amount);
                             return;
                         }
                     }

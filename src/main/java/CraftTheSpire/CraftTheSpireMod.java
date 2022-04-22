@@ -144,7 +144,7 @@ public class CraftTheSpireMod implements
                 rareComponents.add(c);
                 break;
         }
-        AbstractRewardLogic logic = c.spawnReward(0);
+        AbstractRewardLogic logic = c.spawnReward(1);
         BaseMod.registerCustomReward(logic.type, logic, logic);
     }
 

@@ -60,8 +60,7 @@ public class HeavyComponent extends AbstractComponent {
     public static class RewardLogic extends AbstractRewardLogic {
 
         public RewardLogic(int amount) {
-            super(ICON, ID, UI_TEXT[0], REWARD);
-            this.amount = amount;
+            super(ICON, ID, UI_TEXT[0], REWARD, amount);
         }
 
         @Override
