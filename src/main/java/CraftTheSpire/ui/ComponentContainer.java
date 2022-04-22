@@ -62,7 +62,7 @@ public class ComponentContainer {
     }
 
     public void render(SpriteBatch sb) {
-        FontHelper.renderFontLeftDownAligned(sb, FontHelper.charTitleFont, label, x, y, Settings.CREAM_COLOR);
+        FontHelper.renderFontLeft(sb, FontHelper.charTitleFont, label, x, y, Settings.CREAM_COLOR);
         for (ClickableUIObjects.UIComponentTickBox c : components) {
             c.render(sb);
         }
