@@ -1,20 +1,13 @@
 package CraftTheSpire.patches;
 
-import basemod.abstracts.CustomCard;
-import basemod.patches.com.megacrit.cardcrawl.cards.AbstractCard.RenderCardDescriptors;
-import com.badlogic.gdx.graphics.g2d.GlyphLayout;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
-import com.evacipated.cardcrawl.modthespire.lib.*;
+import com.evacipated.cardcrawl.modthespire.lib.SpireField;
+import com.evacipated.cardcrawl.modthespire.lib.SpireInstrumentPatch;
+import com.evacipated.cardcrawl.modthespire.lib.SpirePatch;
+import com.evacipated.cardcrawl.modthespire.lib.SpirePatch2;
 import com.megacrit.cardcrawl.cards.AbstractCard;
-import com.megacrit.cardcrawl.core.Settings;
-import com.megacrit.cardcrawl.helpers.FontHelper;
 import javassist.CannotCompileException;
-import javassist.CtBehavior;
 import javassist.expr.ExprEditor;
 import javassist.expr.FieldAccess;
-import javassist.expr.Handler;
-
-import java.util.List;
 
 public class DescriptionOverridePatch {
 
