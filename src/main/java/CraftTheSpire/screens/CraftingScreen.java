@@ -6,6 +6,7 @@ import CraftTheSpire.patches.DescriptionOverridePatch;
 import CraftTheSpire.patches.NoCardDescriptorsPlz;
 import CraftTheSpire.patches.ScreenPatches;
 import CraftTheSpire.patches.TypeOverridePatch;
+import CraftTheSpire.relics.OnCraftRelic;
 import CraftTheSpire.ui.ClickableUIObjects;
 import CraftTheSpire.ui.ComponentContainer;
 import basemod.ReflectionHacks;
@@ -22,6 +23,7 @@ import com.megacrit.cardcrawl.helpers.MathHelper;
 import com.megacrit.cardcrawl.helpers.input.InputHelper;
 import com.megacrit.cardcrawl.localization.UIStrings;
 import com.megacrit.cardcrawl.random.Random;
+import com.megacrit.cardcrawl.relics.AbstractRelic;
 import com.megacrit.cardcrawl.rooms.RestRoom;
 import com.megacrit.cardcrawl.screens.mainMenu.ScrollBar;
 import com.megacrit.cardcrawl.screens.mainMenu.ScrollBarListener;
@@ -235,6 +237,11 @@ public class CraftingScreen implements ScrollBarListener {
         RARITY.modifyCreatedCard(card);
         TYPE.modifyCreatedCard(card);
         EXTRA.modifyCreatedCard(card);
+        for (AbstractRelic r : AbstractDungeon.player.relics) {
+            if (r instanceof OnCraftRelic) {
+                ((OnCraftRelic) r).modifyCraftedCard(card);
+            }
+        }
     }
 
     public void consumeComponents() {
