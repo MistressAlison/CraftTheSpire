@@ -12,13 +12,13 @@
     "TEXT": ["Rare Parts", "A diamond in the rough.", ""]
   },
   "CraftTheSpire:AttackComponent": {
-    "TEXT": ["Attack Components", "Spare blades either found or looted.", ""]
+    "TEXT": ["Attack Shard", "Spare blades either found or looted.", ""]
   },
   "CraftTheSpire:SkillComponent": {
-    "TEXT": ["Skill Components", "Trinkets and other useful things.", ""]
+    "TEXT": ["Skill Shard", "Trinkets and other useful things.", ""]
   },
   "CraftTheSpire:PowerComponent": {
-    "TEXT": ["Power Components", "Powerful magicks are contained within.", ""]
+    "TEXT": ["Power Shard", "Powerful magicks are contained within.", ""]
   },
   "CraftTheSpire:DubiousComponent": {
     "TEXT": ["Dubious Shard", "What powers does it contain?", ""]
