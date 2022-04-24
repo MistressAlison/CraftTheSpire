@@ -9,12 +9,13 @@ import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.helpers.FontHelper;
 
 import java.util.ArrayList;
+import java.util.Collections;
 
 public class ComponentContainer {
     private float x, y;
     private String label;
     public ArrayList<ClickableUIObjects.UIComponentTickBox> components = new ArrayList<>();
-    private static final float X_OFFSET = 80F * Settings.scale;
+    private static final float X_OFFSET = 10F * Settings.scale;
     private static final float Y_OFFSET = 40F * Settings.scale;
     private static final float CONTAINER_OFFSET = 50f * Settings.scale;
 
@@ -25,9 +26,6 @@ public class ComponentContainer {
     }
 
     public void addComponent(ClickableUIObjects.UIComponentTickBox componentTickBox) {
-        float xo = x + X_OFFSET;
-        float yo = y - CONTAINER_OFFSET - Y_OFFSET * components.size();
-        componentTickBox.move(xo, yo);
         components.add(componentTickBox);
     }
 
@@ -45,8 +43,36 @@ public class ComponentContainer {
         return ret;
     }
 
+    public float getLongestName() {
+        float len = 0;
+        for (int i = 0 ; i < components.size() ; i++) {
+            if (i % 2 == 0 && components.get(i).getAssembledWidth() > len) {
+                len = components.get(i).getAssembledWidth();
+            }
+        }
+        return len;
+    }
+
+    public void arrangeComponents() {
+        Collections.sort(components);
+        float offset = getLongestName();
+        float ox, oy;
+        for (int i = 0 ; i < components.size() ; i++) {
+            if (i % 2 == 0) {
+                ox = x - X_OFFSET - offset;
+            } else {
+                ox = x + X_OFFSET;
+            }
+            oy = y - CONTAINER_OFFSET - Y_OFFSET * (i/2);
+            components.get(i).move(ox, oy);
+        }
+    }
+
     public float getHeightOffset() {
-        return 2*CONTAINER_OFFSET + Y_OFFSET * components.size();
+        if (components.size() % 2 == 0) {
+            return 2*CONTAINER_OFFSET + Y_OFFSET * components.size()/2;
+        }
+        return 2*CONTAINER_OFFSET + Y_OFFSET * (1+components.size()/2);
     }
 
     public void update() {
@@ -62,7 +88,7 @@ public class ComponentContainer {
     }
 
     public void render(SpriteBatch sb) {
-        FontHelper.renderFontLeft(sb, FontHelper.charTitleFont, label, x, y, Settings.CREAM_COLOR);
+        FontHelper.renderFontCentered(sb, FontHelper.charTitleFont, label, x, y, Settings.CREAM_COLOR);
         for (ClickableUIObjects.UIComponentTickBox c : components) {
             c.render(sb);
         }

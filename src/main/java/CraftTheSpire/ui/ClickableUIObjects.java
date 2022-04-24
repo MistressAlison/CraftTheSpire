@@ -94,7 +94,7 @@ public class ClickableUIObjects {
         }
     }
 
-    public abstract static class UIComponentTickBox extends UIObject {
+    public abstract static class UIComponentTickBox extends UIObject implements Comparable<UIComponentTickBox> {
         public final AbstractComponent component;
         private final Color notSelectedColor;
         private final Color cantSelectColor;
@@ -115,7 +115,7 @@ public class ClickableUIObjects {
             checkClickable();
         }
 
-        private float getAssembledWidth() {
+        public float getAssembledWidth() {
             return PAD + FontHelper.getWidth(FontHelper.cardTitleFont, getAssembledName(), 1);
         }
 
@@ -162,6 +162,15 @@ public class ClickableUIObjects {
                 }
             }
             hb.render(sb);
+        }
+
+        @Override
+        public int compareTo(UIComponentTickBox o) {
+            if (component.rarity == o.component.rarity) {
+                return component.name.compareTo(o.component.name);
+            } else {
+                return component.rarity.compareTo(o.component.rarity);
+            }
         }
     }
 

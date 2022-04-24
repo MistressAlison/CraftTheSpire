@@ -29,7 +29,6 @@ import com.megacrit.cardcrawl.ui.buttons.CancelButton;
 import com.megacrit.cardcrawl.ui.buttons.GridSelectConfirmButton;
 import javassist.CtBehavior;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 
 public class CraftingScreen implements ScrollBarListener {
@@ -38,7 +37,7 @@ public class CraftingScreen implements ScrollBarListener {
     public static final String[] TEXT = uiStrings.TEXT;
     public static final String[] CONTAINER_TEXT = uiStrings2.TEXT;
     private static final float SCROLL_BAR_THRESHOLD = 500.0F * Settings.scale;
-    private static final float CONTAINER_START_X = Settings.WIDTH/12F;
+    private static final float CONTAINER_START_X = Settings.WIDTH/6F;
     private static final float CONTAINER_START_Y = Settings.HEIGHT*5F/6F;
     private static final float EXAMPLE_CX = Settings.WIDTH*5/6F;
     private static final float EXAMPLE_Y = CONTAINER_START_Y;
@@ -343,6 +342,10 @@ public class CraftingScreen implements ScrollBarListener {
             }
         }
         offset += EXTRA.getHeightOffset();
+
+        RARITY.arrangeComponents();
+        TYPE.arrangeComponents();
+        EXTRA.arrangeComponents();
 
         containers.add(RARITY);
         containers.add(TYPE);
