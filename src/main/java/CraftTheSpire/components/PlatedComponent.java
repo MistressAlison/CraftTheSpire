@@ -22,7 +22,7 @@ public class PlatedComponent extends AbstractComponent {
     private static final UIStrings uiStrings = CardCrawlGame.languagePack.getUIString(ID);
     public static final String[] UI_TEXT = uiStrings.TEXT;
 
-    public static final SpawnRarity RARITY = SpawnRarity.UNCOMMON;
+    public static final SpawnRarity RARITY = SpawnRarity.COMMON;
     public static final ComponentType TYPE = ComponentType.EXTRA;
     public static final RewardItem.RewardType REWARD = RewardTypeEnumPatches.CTS_PLATED_REWARD;
 
