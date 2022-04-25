@@ -28,7 +28,7 @@ public class HeavyComponent extends AbstractComponent {
 
 
     public HeavyComponent() {
-        super(ID, UI_TEXT[0], RARITY, TYPE, ICON);
+        super(ID, UI_TEXT[0], RARITY, TYPE, ICON, REWARD);
     }
 
     @Override
@@ -50,28 +50,5 @@ public class HeavyComponent extends AbstractComponent {
     @Override
     public boolean canSelect() {
         return CraftingScreen.EXTRA.components.stream().noneMatch(c -> c.clicked && c.component.getClass().equals(LightComponent.class));
-    }
-
-    @Override
-    public AbstractRewardLogic spawnReward(int amount) {
-        return new RewardLogic(amount);
-    }
-
-    public static class RewardLogic extends AbstractRewardLogic {
-
-        public RewardLogic(int amount) {
-            super(ICON, ID, UI_TEXT[0], REWARD, amount);
-        }
-
-        @Override
-        public CustomReward onLoad(RewardSave rewardSave) {
-            return new RewardLogic(rewardSave.amount);
-        }
-
-        @Override
-        public boolean claimReward() {
-            InventoryManager.addComponent(ID, amount);
-            return true;
-        }
     }
 }

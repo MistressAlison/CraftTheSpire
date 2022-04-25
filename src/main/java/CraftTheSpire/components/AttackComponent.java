@@ -26,7 +26,7 @@ public class AttackComponent extends AbstractComponent {
 
 
     public AttackComponent() {
-        super(ID, UI_TEXT[0], RARITY, TYPE, ICON);
+        super(ID, UI_TEXT[0], RARITY, TYPE, ICON, REWARD);
     }
 
     @Override
@@ -37,28 +37,5 @@ public class AttackComponent extends AbstractComponent {
     @Override
     public CraftingScreen.TypeFilter forceType() {
         return CraftingScreen.TypeFilter.ATTACK;
-    }
-
-    @Override
-    public AbstractRewardLogic spawnReward(int amount) {
-        return new RewardLogic(amount);
-    }
-
-    public static class RewardLogic extends AbstractRewardLogic {
-
-        public RewardLogic(int amount) {
-            super(ICON, ID, UI_TEXT[0], REWARD, amount);
-        }
-
-        @Override
-        public CustomReward onLoad(RewardSave rewardSave) {
-            return new RewardLogic(rewardSave.amount);
-        }
-
-        @Override
-        public boolean claimReward() {
-            InventoryManager.addComponent(ID, amount);
-            return true;
-        }
     }
 }

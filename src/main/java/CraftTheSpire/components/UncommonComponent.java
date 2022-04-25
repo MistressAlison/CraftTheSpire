@@ -26,7 +26,7 @@ public class UncommonComponent extends AbstractComponent {
 
 
     public UncommonComponent() {
-        super(ID, UI_TEXT[0], RARITY, TYPE, ICON);
+        super(ID, UI_TEXT[0], RARITY, TYPE, ICON, REWARD);
     }
 
     @Override
@@ -37,28 +37,5 @@ public class UncommonComponent extends AbstractComponent {
     @Override
     public CraftingScreen.RarityFilter forceRarity() {
         return CraftingScreen.RarityFilter.UNCOMMON;
-    }
-
-    @Override
-    public AbstractRewardLogic spawnReward(int amount) {
-        return new RewardLogic(amount);
-    }
-
-    public static class RewardLogic extends AbstractRewardLogic {
-
-        public RewardLogic(int amount) {
-            super(ICON, ID, UI_TEXT[0], REWARD, amount);
-        }
-
-        @Override
-        public CustomReward onLoad(RewardSave rewardSave) {
-            return new RewardLogic(rewardSave.amount);
-        }
-
-        @Override
-        public boolean claimReward() {
-            InventoryManager.addComponent(ID, amount);
-            return true;
-        }
     }
 }

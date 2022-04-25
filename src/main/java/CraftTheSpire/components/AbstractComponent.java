@@ -2,12 +2,16 @@ package CraftTheSpire.components;
 
 import CraftTheSpire.rewards.AbstractRewardLogic;
 import CraftTheSpire.screens.CraftingScreen;
+import CraftTheSpire.util.InventoryManager;
+import basemod.abstracts.CustomReward;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.core.CardCrawlGame;
 import com.megacrit.cardcrawl.core.Settings;
 import com.megacrit.cardcrawl.monsters.AbstractMonster;
+import com.megacrit.cardcrawl.rewards.RewardItem;
+import com.megacrit.cardcrawl.rewards.RewardSave;
 
 import java.util.ArrayList;
 
@@ -29,13 +33,15 @@ public abstract class AbstractComponent {
     public SpawnRarity rarity;
     public ComponentType type;
     public Texture icon;
+    public RewardItem.RewardType rewardType;
 
-    public AbstractComponent(String ID, String name, SpawnRarity rarity, ComponentType type, Texture icon) {
+    public AbstractComponent(String ID, String name, SpawnRarity rarity, ComponentType type, Texture icon, RewardItem.RewardType rewardType) {
         this.ID = ID;
         this.name = name;
         this.rarity = rarity;
         this.type = type;
         this.icon = icon;
+        this.rewardType = rewardType;
     }
 
     public Color getNameColor() {
@@ -94,5 +100,25 @@ public abstract class AbstractComponent {
 
     public void modifyCreatedCard(AbstractCard card) {}
 
-    public abstract AbstractRewardLogic spawnReward(int amount);
+    public AbstractRewardLogic spawnReward(int amount) {
+        return new RewardLogic(amount);
+    }
+
+    public class RewardLogic extends AbstractRewardLogic {
+
+        public RewardLogic(int amount) {
+            super(AbstractComponent.this.icon, AbstractComponent.this.ID, AbstractComponent.this.name, AbstractComponent.this.rewardType, amount);
+        }
+
+        @Override
+        public CustomReward onLoad(RewardSave rewardSave) {
+            return new RewardLogic(rewardSave.amount);
+        }
+
+        @Override
+        public boolean claimReward() {
+            InventoryManager.addComponent(ID, amount);
+            return true;
+        }
+    }
 }

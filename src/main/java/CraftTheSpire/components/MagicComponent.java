@@ -38,7 +38,7 @@ public class MagicComponent extends AbstractComponent {
 
 
     public MagicComponent() {
-        super(ID, UI_TEXT[0], RARITY, TYPE, ICON);
+        super(ID, UI_TEXT[0], RARITY, TYPE, ICON, REWARD);
     }
 
     @Override
@@ -55,28 +55,5 @@ public class MagicComponent extends AbstractComponent {
     @Override
     public String modifyPreviewDescription(String desc) {
         return desc + UI_TEXT[2];
-    }
-
-    @Override
-    public AbstractRewardLogic spawnReward(int amount) {
-        return new RewardLogic(amount);
-    }
-
-    public static class RewardLogic extends AbstractRewardLogic {
-
-        public RewardLogic(int amount) {
-            super(ICON, ID, UI_TEXT[0], REWARD, amount);
-        }
-
-        @Override
-        public CustomReward onLoad(RewardSave rewardSave) {
-            return new RewardLogic(rewardSave.amount);
-        }
-
-        @Override
-        public boolean claimReward() {
-            InventoryManager.addComponent(ID, amount);
-            return true;
-        }
     }
 }
