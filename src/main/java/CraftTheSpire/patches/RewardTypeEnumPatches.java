@@ -33,7 +33,11 @@ public class RewardTypeEnumPatches {
     @SpireEnum
     public static RewardItem.RewardType CTS_FORGE_REWARD; // Upgrade the card
     @SpireEnum
-    public static RewardItem.RewardType CTS_MAGIC_REWARD; // Uses Magic Number
+    public static RewardItem.RewardType CTS_MAGIC_REWARD; // Applies a debuff
+    @SpireEnum
+    public static RewardItem.RewardType CTS_ENERGY_REWARD; // Gives energy
+    @SpireEnum
+    public static RewardItem.RewardType CTS_DRAW_REWARD; // Draws a card
     @SpireEnum
     public static RewardItem.RewardType CTS_PLATED_REWARD; // Gives Block
 }

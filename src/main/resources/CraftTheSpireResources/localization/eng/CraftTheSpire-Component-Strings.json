@@ -3,39 +3,45 @@
     "TEXT": ["Name", "Description", "Preview Tip"]
   },
   "CraftTheSpire:CommonComponent": {
-    "TEXT": ["Common Parts", "Often found laying around the spire.", ""]
+    "TEXT": ["Common Parts", "", ""]
   },
   "CraftTheSpire:UncommonComponent": {
-    "TEXT": ["Uncommon Parts", "A more impressive find.", ""]
+    "TEXT": ["Uncommon Parts", "", ""]
   },
   "CraftTheSpire:RareComponent": {
-    "TEXT": ["Rare Parts", "A diamond in the rough.", ""]
+    "TEXT": ["Rare Parts", "", ""]
   },
   "CraftTheSpire:AttackComponent": {
-    "TEXT": ["Attack Shard", "Spare blades either found or looted.", ""]
+    "TEXT": ["Attack Shard", "", ""]
   },
   "CraftTheSpire:SkillComponent": {
-    "TEXT": ["Skill Shard", "Trinkets and other useful things.", ""]
+    "TEXT": ["Skill Shard", "", ""]
   },
   "CraftTheSpire:PowerComponent": {
-    "TEXT": ["Power Shard", "Powerful magicks are contained within.", ""]
+    "TEXT": ["Power Shard", "", ""]
   },
   "CraftTheSpire:DubiousComponent": {
-    "TEXT": ["Dubious Shard", "What powers does it contain?", ""]
+    "TEXT": ["Dubious Shard", "", ""]
   },
   "CraftTheSpire:ForgeComponent": {
-    "TEXT": ["Forge Hammer", "Still lets you smith.", ""]
+    "TEXT": ["Forge Hammer", "", "Upgraded...? NL "]
   },
   "CraftTheSpire:LightComponent": {
-    "TEXT": ["Light Parts", "Convenient to carry around.", "Low cost...? NL "]
+    "TEXT": ["Light Parts", "", "Low cost...? NL "]
   },
   "CraftTheSpire:HeavyComponent": {
-    "TEXT": ["Heavy Parts", "Not so convenient to carry around.", "High cost...? NL "]
+    "TEXT": ["Heavy Parts", "", "High cost...? NL "]
   },
   "CraftTheSpire:MagicComponent": {
-    "TEXT": ["Magic Crystal", "Ooh shiny!", "Applies a debuff...? NL "]
+    "TEXT": ["Magic Crystal", "", "Applies a debuff...? NL "]
+  },
+  "CraftTheSpire:EnergeticComponent": {
+    "TEXT": ["Energy Orb", "", "Gains energy...? NL "]
+  },
+  "CraftTheSpire:FlexibleComponent": {
+    "TEXT": ["Flexible Parts", "", "Draws a card...? NL "]
   },
   "CraftTheSpire:PlatedComponent": {
-    "TEXT": ["Spare Plating", "Looks protective.", "Gives Block...? NL "]
+    "TEXT": ["Spare Plating", "", "Gives Block...? NL "]
   }
 }
