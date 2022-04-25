@@ -3,6 +3,7 @@ package CraftTheSpire.components;
 import CraftTheSpire.CraftTheSpireMod;
 import CraftTheSpire.patches.RewardTypeEnumPatches;
 import CraftTheSpire.rewards.AbstractRewardLogic;
+import CraftTheSpire.util.ArchetypeHelper;
 import CraftTheSpire.util.InventoryManager;
 import CraftTheSpire.util.TextureLoader;
 import basemod.abstracts.CustomReward;
@@ -42,12 +43,12 @@ public class MagicComponent extends AbstractComponent {
 
     @Override
     public boolean canDropOnDisassemble(AbstractCard card) {
-        return appliesDebuff(card);
+        return ArchetypeHelper.appliesDebuff(card);
     }
 
     @Override
     public ArrayList<AbstractCard> filterCards(ArrayList<AbstractCard> input) {
-        input.removeIf(c -> !appliesDebuff(c));
+        input.removeIf(c -> !ArchetypeHelper.appliesDebuff(c));
         return input;
     }
 
@@ -77,73 +78,5 @@ public class MagicComponent extends AbstractComponent {
             InventoryManager.addComponent(ID, amount);
             return true;
         }
-    }
-
-    public static boolean appliesDebuff(AbstractCard card) {
-        //Set up some flags
-        final boolean[] foundDebuff = {false};
-        final boolean[] foundBuff = {false};
-        final boolean[] isDebuff = {false};
-        try {
-            //Grab the use method
-            ClassPool pool = Loader.getClassPool();
-            CtMethod useMethod = pool.get(card.getClass().getName()).getDeclaredMethod("use");
-
-            useMethod.instrument(new ExprEditor() {
-                @Override
-                public void edit(NewExpr n) {
-                    try {
-                        //Check if the new object extends AbstractPower
-                        CtConstructor constructor = n.getConstructor();
-                        CtClass originalClass = constructor.getDeclaringClass();
-
-                        if (originalClass != null) {
-                            CtClass currentClass = originalClass;
-                            while (currentClass != null && !currentClass.getName().equals(AbstractPower.class.getName())) {
-                                currentClass = currentClass.getSuperclass();
-                            }
-                            //We found AbstractPower, good to go
-                            if (currentClass != null && currentClass.getName().equals(AbstractPower.class.getName())) {
-                                //Define a checker for finding the power type
-                                ExprEditor debuffChecker = new ExprEditor() {
-                                    @Override
-                                    public void edit(FieldAccess f) {
-                                        if (f.getClassName().equals(AbstractPower.PowerType.class.getName())) {
-                                            if (f.getFieldName().equals("DEBUFF")) {
-                                                foundDebuff[0] = true;
-                                            }
-                                            if (f.getClassName().equals("BUFF")) {
-                                                foundBuff[0] = true;
-                                            }
-                                        }
-                                    }
-                                };
-
-                                //Check both the constructor and the updateDescription to catch things like Strength
-                                constructor.instrument(debuffChecker);
-                                CtMethod descriptionMethod = currentClass.getDeclaredMethod("updateDescription");
-                                descriptionMethod.instrument(debuffChecker);
-
-                                //If we actually found a debuff
-                                if (foundDebuff[0]) {
-                                    //Check if it also isn't a buff sometimes
-                                    if (!foundBuff[0]) {
-                                        isDebuff[0] = true;
-                                    } else {
-                                        //Guess based on the card target
-                                        if (card.target == AbstractCard.CardTarget.ENEMY || card.target == AbstractCard.CardTarget.ALL_ENEMY) {
-                                            isDebuff[0] = true;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    } catch (Exception ignored) {}
-                }
-            });
-        } catch (Exception ignored) {
-            return false;
-        }
-        return isDebuff[0];
     }
 }
