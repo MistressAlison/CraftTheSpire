@@ -33,10 +33,10 @@
     "TEXT": ["Heavy Parts", "", "High cost...? NL "]
   },
   "CraftTheSpire:MagicComponent": {
-    "TEXT": ["Magic Crystal", "", "Applies a debuff...? NL "]
+    "TEXT": ["Imbued Parts", "", "Applies a debuff...? NL "]
   },
   "CraftTheSpire:EnergeticComponent": {
-    "TEXT": ["Energy Orb", "", "Gains energy...? NL "]
+    "TEXT": ["Energetic Orb", "", "Gains energy...? NL "]
   },
   "CraftTheSpire:FlexibleComponent": {
     "TEXT": ["Flexible Parts", "", "Draws a card...? NL "]
