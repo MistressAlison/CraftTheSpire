@@ -31,6 +31,11 @@ public class ForgeComponent extends AbstractComponent {
     }
 
     @Override
+    public String modifyPreviewDescription(String desc) {
+        return desc + UI_TEXT[2];
+    }
+
+    @Override
     public boolean canDropOnDisassemble(AbstractCard card) {
         return card.upgraded;
     }
