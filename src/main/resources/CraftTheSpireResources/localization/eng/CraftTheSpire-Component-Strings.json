@@ -36,12 +36,12 @@
     "TEXT": ["Imbued Parts", "", "Applies a debuff...? NL "]
   },
   "CraftTheSpire:EnergeticComponent": {
-    "TEXT": ["Energetic Orb", "", "Gains energy...? NL "]
+    "TEXT": ["Energetic Orb", "", "Energy related...? NL "]
   },
   "CraftTheSpire:FlexibleComponent": {
     "TEXT": ["Flexible Parts", "", "Draws a card...? NL "]
   },
   "CraftTheSpire:PlatedComponent": {
-    "TEXT": ["Spare Plating", "", "Gives Block...? NL "]
+    "TEXT": ["Spare Plating", "", "Block related...? NL "]
   }
 }

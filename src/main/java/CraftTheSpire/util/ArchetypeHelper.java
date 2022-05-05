@@ -17,6 +17,7 @@ import com.megacrit.cardcrawl.cards.green.Tactician;
 import com.megacrit.cardcrawl.cards.purple.DeusExMachina;
 import com.megacrit.cardcrawl.cards.red.Sentinel;
 import com.megacrit.cardcrawl.cards.tempCards.Miracle;
+import com.megacrit.cardcrawl.helpers.GameDictionary;
 import com.megacrit.cardcrawl.orbs.Plasma;
 import com.megacrit.cardcrawl.powers.*;
 import com.megacrit.cardcrawl.powers.watcher.DevaPower;
@@ -33,8 +34,16 @@ public class ArchetypeHelper {
     public static Class<?>[] energyClasses = {GainEnergyAction.class, EnergizedPower.class, EnergizedBluePower.class, Plasma.class, BerserkPower.class, DropkickAction.class, DoppelgangerAction.class, HeelHookAction.class, GainEnergyIfDiscardAction.class, AggregateEnergyAction.class, DoubleEnergyAction.class, FissionAction.class, RecycleAction.class, SunderAction.class, CollectAction.class, CollectPower.class, FollowUpAction.class, DevaPower.class};
     public static Class<?>[] drawShenaniganCards = {Reflex.class};
     public static Class<?>[] drawClasses = {DrawCardAction.class, DrawCardNextTurnPower.class, ConditionalDrawAction.class, DarkEmbracePower.class, DropkickAction.class, EvolvePower.class, BrutalityPower.class, CalculatedGambleAction.class, DoppelgangerAction.class, ExpertiseAction.class, ToolsOfTheTradePower.class, CompileDriverAction.class, FTLAction.class, HeatsinkPower.class, FissionAction.class, MachineLearning.class, InnerPeaceAction.class, RushdownPower.class, SanctityAction.class};
+    public static String[] orbCodes = {"[E]","[R]","[B]","[G]","[W]"};
+
+    public static boolean hasBlockKeyword(AbstractCard card) {
+        return Arrays.stream(GameDictionary.BLOCK.NAMES).anyMatch(s -> card.rawDescription.toLowerCase().contains(s.toLowerCase()));
+    }
 
     public static boolean givesEnergy(AbstractCard card) {
+        if (Arrays.stream(orbCodes).anyMatch(s -> card.rawDescription.contains(s))) {
+            return true;
+        }
         //TODO should probably also check if it actually spawns the card
         if (card.cardsToPreview instanceof Miracle) {
             return true;

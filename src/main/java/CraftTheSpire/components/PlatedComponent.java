@@ -3,6 +3,7 @@ package CraftTheSpire.components;
 import CraftTheSpire.CraftTheSpireMod;
 import CraftTheSpire.patches.RewardTypeEnumPatches;
 import CraftTheSpire.rewards.AbstractRewardLogic;
+import CraftTheSpire.util.ArchetypeHelper;
 import CraftTheSpire.util.InventoryManager;
 import CraftTheSpire.util.TextureLoader;
 import basemod.abstracts.CustomReward;
@@ -33,12 +34,12 @@ public class PlatedComponent extends AbstractComponent {
 
     @Override
     public boolean canDropOnDisassemble(AbstractCard card) {
-        return card.baseBlock > 1 && !(card instanceof RitualDagger);
+        return ArchetypeHelper.hasBlockKeyword(card);
     }
 
     @Override
     public ArrayList<AbstractCard> filterCards(ArrayList<AbstractCard> input) {
-        input.removeIf(c -> c.baseBlock < 1 || c instanceof RitualDagger);
+        input.removeIf(c -> !ArchetypeHelper.hasBlockKeyword(c));
         return input;
     }
 
