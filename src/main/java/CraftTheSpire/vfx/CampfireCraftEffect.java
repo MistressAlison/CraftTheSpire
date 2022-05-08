@@ -1,9 +1,10 @@
-package CraftTheSpire.ui;
+package CraftTheSpire.vfx;
 
 import CraftTheSpire.CraftTheSpireMod;
 import CraftTheSpire.patches.ScreenPatches;
 import CraftTheSpire.relics.OnCraftRelic;
 import CraftTheSpire.screens.CraftingScreen;
+import CraftTheSpire.ui.CraftOption;
 import basemod.ReflectionHacks;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
@@ -21,7 +22,6 @@ import com.megacrit.cardcrawl.rooms.CampfireUI;
 import com.megacrit.cardcrawl.rooms.RestRoom;
 import com.megacrit.cardcrawl.ui.campfire.AbstractCampfireOption;
 import com.megacrit.cardcrawl.vfx.AbstractGameEffect;
-import com.megacrit.cardcrawl.vfx.cardManip.ShowCardAndObtainEffect;
 
 import java.util.ArrayList;
 
@@ -51,7 +51,7 @@ public class CampfireCraftEffect extends AbstractGameEffect {
             for (AbstractCard c : CraftingScreen.createdCards) {
                 //++CardCrawlGame.metricData.campfire_upgraded;// 55
                 //CardCrawlGame.metricData.addCampfireChoiceData("SMITH", c.getMetricID());// 56
-                AbstractDungeon.effectsQueue.add(new ShowCardAndObtainEffect(c, Settings.WIDTH/2F, Settings.HEIGHT/2F));// 59
+                AbstractDungeon.effectsQueue.add(new CraftCardEffect(c, Settings.WIDTH/2F, Settings.HEIGHT/2F));// 59
             }
             for (AbstractRelic r : AbstractDungeon.player.relics) {
                 if (r instanceof OnCraftRelic) {

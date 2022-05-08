@@ -2,6 +2,7 @@ package CraftTheSpire.ui;
 
 import CraftTheSpire.CraftTheSpireMod;
 import CraftTheSpire.util.InventoryManager;
+import CraftTheSpire.vfx.CampfireCraftEffect;
 import com.megacrit.cardcrawl.core.CardCrawlGame;
 import com.megacrit.cardcrawl.dungeons.AbstractDungeon;
 import com.megacrit.cardcrawl.helpers.ImageMaster;
