@@ -52,7 +52,7 @@ public class CraftingScreen implements ScrollBarListener {
     public static ArrayList<ComponentContainer> containers = new ArrayList<>();
     public static ArrayList<AbstractCard> examplePreviews = new ArrayList<>();
     public static ComponentContainer RARITY, TYPE, EXTRA;
-    private AbstractCard previewCard = null;
+    public static AbstractCard previewCard = null;
     private float scrollLowerBound;
     private float scrollUpperBound;
     private boolean grabbedScreen;
@@ -293,7 +293,7 @@ public class CraftingScreen implements ScrollBarListener {
         this.tipMsg = msg;
         this.callOnOpen();
         this.calculateScrollBounds();
-        this.previewCard = AbstractDungeon.commonCardPool.getRandomCard(false).makeStatEquivalentCopy();
+        previewCard = AbstractDungeon.commonCardPool.getRandomCard(false).makeStatEquivalentCopy();
         prepPreviewCard();
         prepContainers();
         this.confirmButton.hideInstantly();
