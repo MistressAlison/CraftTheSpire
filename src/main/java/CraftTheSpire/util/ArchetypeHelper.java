@@ -37,7 +37,7 @@ public class ArchetypeHelper {
     public static String[] orbCodes = {"[E]","[R]","[B]","[G]","[W]"};
 
     public static boolean hasBlockKeyword(AbstractCard card) {
-        return Arrays.stream(GameDictionary.BLOCK.NAMES).anyMatch(s -> card.rawDescription.toLowerCase().contains(s.toLowerCase()));
+        return Arrays.stream(GameDictionary.BLOCK.NAMES).anyMatch(s -> card.keywords.contains(s));
     }
 
     public static boolean givesEnergy(AbstractCard card) {
