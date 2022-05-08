@@ -2,10 +2,7 @@ package CraftTheSpire.screens;
 
 import CraftTheSpire.CraftTheSpireMod;
 import CraftTheSpire.components.AbstractComponent;
-import CraftTheSpire.patches.DescriptionOverridePatch;
-import CraftTheSpire.patches.NoCardDescriptorsPlz;
-import CraftTheSpire.patches.ScreenPatches;
-import CraftTheSpire.patches.TypeOverridePatch;
+import CraftTheSpire.patches.*;
 import CraftTheSpire.relics.OnCraftRelic;
 import CraftTheSpire.ui.ClickableUIObjects;
 import CraftTheSpire.ui.ComponentContainer;
@@ -184,8 +181,10 @@ public class CraftingScreen implements ScrollBarListener {
         RarityFilter rarity = RARITY.getSelectedRarity();
         if (rarity == RarityFilter.RANDOM) {
             previewCard.rarity = AbstractCard.CardRarity.COMMON;
+            DarkenBannerPatches.DarkenField.darken.set(previewCard, true);
         } else {
             previewCard.rarity = rarity.getRarity();
+            DarkenBannerPatches.DarkenField.darken.set(previewCard, false);
         }
         if (generateNewExamples) {
             generateNewExamples = false;
