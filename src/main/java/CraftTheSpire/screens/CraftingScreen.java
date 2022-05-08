@@ -9,6 +9,7 @@ import CraftTheSpire.ui.ComponentContainer;
 import basemod.ReflectionHacks;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.evacipated.cardcrawl.mod.stslib.fields.cards.AbstractCard.CommonKeywordIconsField;
 import com.evacipated.cardcrawl.modthespire.lib.*;
 import com.megacrit.cardcrawl.cards.AbstractCard;
 import com.megacrit.cardcrawl.core.CardCrawlGame;
@@ -304,6 +305,7 @@ public class CraftingScreen implements ScrollBarListener {
     public void prepPreviewCard() {
         previewCard.setLocked();
         previewCard.name = "? ? ?";
+        CommonKeywordIconsField.useIcons.set(previewCard, false);
         NoCardDescriptorsPlz.NoDescriptorsField.cease.set(previewCard, true);
         previewCard.cost = -2;
         scaleCard(previewCard, 1F, 1.7F);
